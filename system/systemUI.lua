@@ -166,6 +166,10 @@ function renderLogin()
         passwd = nameF:read()
         local fullname = nameF:read()
         nameF:close()
+        if username == "" or username == nil or passwd == "" or passwd == nil or fullname == "" or fullname == nil then
+            shell.run("system/settings/setup.lua")
+        end
+
         local nameLenT = string.len(username .. " @ " .. fullname)
         local nameLen
         if nameLenT % 2 == 0 then
@@ -176,6 +180,8 @@ function renderLogin()
         showNormalText(nameLen, 7, username .. " @ " .. fullname)
         showTextField(15, 9, "", true, 22, userLogin, nil)
         showButton(30, 11, "[Login]", loginBtn)
+    else
+        shell.run("system/settings/setup.lua")
     end
 end
 
@@ -184,9 +190,12 @@ end
 iniRenderFunc = renderLogin
 
 local setupdone = io.open("system/settings/.setupdone", "r")
-if setupdone == nil then
+local nameF = io.open("system/settings/user.data", "r")
+if setupdone == nil or nameF == nil then
     shell.run("system/settings/setup.lua")
 end
+setupdone:close()
+nameF:close()
 
 
 main()
