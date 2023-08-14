@@ -83,7 +83,7 @@ function renderMain()
     
     switchPage()
     clearsc()
-    showNormalText(1, 1, "PaletteOS|")
+    showNormalText(1, 1, "PaletteOS|", colors.red)
     showButton(12, 1, "[Power]", shutdown)
     showButton(20, 1, "[Reboot]", reboot)
     showButton(29, 1, "[Run]", runApp)
