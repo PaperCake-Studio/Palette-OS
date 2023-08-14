@@ -71,7 +71,7 @@ local function showPressedButton(x, y, str)
     term.write(str)
     
 
-    sleep(0.2)
+    sleep(0.15)
     term.setBackgroundColor(colors.lime)
     term.setTextColor(colors.white)
     term.setCursorPos(x, y)
