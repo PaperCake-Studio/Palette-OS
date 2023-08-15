@@ -266,15 +266,6 @@ function showSingleSelectableText(x, y, str)
     term.setBackgroundColor(colors.lightGray)
 end
 
----Create a textfield
----@param x number
----@param y number
----@param w number
----@param actFunc function
-function showTextField(x, y, w, actFunc)
-    createTextField(x, y, "", true, w, actFunc, nil)
-end
-
 local function createTextField(x, y, str, ini, w, actFunc, i)
     if ini == nil then
         ini = false
@@ -316,6 +307,15 @@ local function createTextField(x, y, str, ini, w, actFunc, i)
 
     term.setBackgroundColor(colors.lightGray)
 
+end
+
+---Create a textfield
+---@param x number
+---@param y number
+---@param w number
+---@param actFunc function
+function showTextField(x, y, w, actFunc)
+    createTextField(x, y, "", true, w, actFunc, nil)
 end
 
 ---Get Selected Text (Single-Selectable Text)
