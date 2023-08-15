@@ -266,15 +266,16 @@ function showSingleSelectableText(x, y, str)
     term.setBackgroundColor(colors.lightGray)
 end
 
----Create a text field, you don't need to give "i" and only give "w" when initialized
+---Create a textfield
 ---@param x number
 ---@param y number
----@param str string
----@param ini boolean
----@param w any
+---@param w number
 ---@param actFunc function
----@param i any
-function showTextField(x, y, str, ini, w, actFunc, i)
+function showTextField(x, y, w, actFunc)
+    createTextField(x, y, "", true, w, actFunc, nil)
+end
+
+local function createTextField(x, y, str, ini, w, actFunc, i)
     if ini == nil then
         ini = false
     end
@@ -527,9 +528,9 @@ local function detectClick()
                 if clickFlag == i then
                     if objType[i] == "F" then
                         if objActFunc[i](true) == nil and isEnable[i] then
-                            showTextField(objAreaMinX[i], objAreaY[i], " ", false, 0, nil, i)
+                            createTextField(objAreaMinX[i], objAreaY[i], " ", false, 0, nil, i)
                         else
-                            showTextField(objAreaMinX[i] + string.len(objActFunc[i](true)), objAreaY[i], " ", false, 0, nil, i)
+                            createTextField(objAreaMinX[i] + string.len(objActFunc[i](true)), objAreaY[i], " ", false, 0, nil, i)
                         end
                         
                     end
@@ -540,9 +541,9 @@ local function detectClick()
                 if x >= objAreaMinX[i] and x <= objAreaMaxX[i] and y == objAreaY[i] and isEnable[i] then
                     if objType[i] == "F" then
                         if objActFunc[i](true) ~= nil then
-                            showTextField(objAreaMinX[i] + string.len(objActFunc[i](true)), objAreaY[i], "_", false, 0, nil, i)
+                            createTextField(objAreaMinX[i] + string.len(objActFunc[i](true)), objAreaY[i], "_", false, 0, nil, i)
                         else
-                            showTextField(objAreaMinX[i], objAreaY[i], "_", false, 0, nil, i)
+                            createTextField(objAreaMinX[i], objAreaY[i], "_", false, 0, nil, i)
                         end
                         
                     elseif objType[i] == "B" then
@@ -628,10 +629,10 @@ local function detectKey()
                     
                     if objActFunc[i](true) == nil then
                         
-                        showTextField(objAreaMinX[i], objAreaY[i], string.format("%s_ ", ""), false, 0, nil, i)
+                        createTextField(objAreaMinX[i], objAreaY[i], string.format("%s_ ", ""), false, 0, nil, i)
                     else
                         
-                        showTextField(objAreaMinX[i], objAreaY[i], string.format("%s_ ", objActFunc[i](true)), false, 0, nil, i)
+                        createTextField(objAreaMinX[i], objAreaY[i], string.format("%s_ ", objActFunc[i](true)), false, 0, nil, i)
                     end
                 end
                 
