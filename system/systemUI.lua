@@ -178,7 +178,7 @@ function renderLogin()
             nameLen = (52 - (nameLenT + 1)) / 2
         end
         showNormalText(nameLen, 7, username .. " @ " .. fullname)
-        showTextField(15, 9, "", true, 22, userLogin, nil)
+        showTextField(15, 9, 22, userLogin)
         showButton(30, 11, "[Login]", loginBtn)
     else
         shell.run("system/settings/setup.lua")
