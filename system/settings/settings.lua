@@ -12,12 +12,6 @@ function mainPage()
     changePage(1)
 end
 
-function closeBtn()
-    if speaker ~= nil then
-        speaker.playSound("block.note_block.banjo")
-    end
-    exit()
-end
 
 local fullName
 local username
@@ -118,7 +112,6 @@ function renderSettingsPage()
         end
         
     end
-    showButton(49, 1, "[X]", closeBtn)
     showButton(1, 3, "[Overall]", mainPage)
     showButton(1, 5, "[Profile]", profilePage)
     
@@ -150,13 +143,13 @@ function renderSettingsPage()
         disableObj(1, 5)
         showNormalText(14, 4, "Profile Details:")
         showNormalText(18, 6, "Fullname:")
-        showTextField(27, 6, fullnameChange, true, 22, newFullnameAct, nil)
+        showTextField(27, 6, 22, newFullnameAct)
         showNormalText(18, 8, "Username:")
-        showTextField(27, 8, usernameChange, true, 22, newUsernameAct, nil)
+        showTextField(27, 8, 22, newUsernameAct)
         showNormalText(14, 10, "Old Password:")
-        showTextField(27, 10, oldPasswdWrote, true, 22, oldPasswdAct, nil)
+        showTextField(27, 10, 22, oldPasswdAct)
         showNormalText(14, 12, "New Password:")
-        showTextField(27, 12, passwdChange, true, 22, newPasswdAct, nil)
+        showTextField(27, 12, 22, newPasswdAct)
         showButton(41, 14, "[Cancel]", changeProfileBtn)
         showButton(42, 15, "[Apply]", applyChangesBtn)
     end

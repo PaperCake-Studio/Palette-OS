@@ -83,7 +83,6 @@ function renderExplorer(dir)
     showNormalText(12, 3, dir)
     showNormalText(11, 4, "------------------------------------------")
     showNormalText(12, 18, "#You know, it's alpha, bugs are normal#", colors.red)
-    showButton(49, 1, "[X]", closeBtn)
     showButton(1, 3, "[Page Up]", pageupBtn)
     showButton(1, 5, "[Page Dn]", pagednBtn)
     showButton(1, 7, "[  <--  ]", previousDirBtn)
@@ -116,12 +115,6 @@ function renderExplorer(dir)
     
 end
 
-function closeBtn()
-    if speaker ~= nil then
-        speaker.playSound("block.note_block.banjo", 3)
-    end
-    exit()
-end
 
 function refreshBtn()
     renderExplorer(currDir)

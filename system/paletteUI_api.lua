@@ -648,7 +648,6 @@ detectKeyFunc = detectKey
 
 
 
-
 --main
 function main()
     clearsc()
@@ -656,9 +655,8 @@ function main()
     term.setPaletteColor(colors.gray, 0x808080)
     iniRenderFunc()
     while true do
-        
-        parallel.waitForAny(detectClickFunc, detectKeyFunc)
         if quitFlag == true then break end
+        parallel.waitForAny(detectClickFunc, detectKeyFunc)
     end
 
     term.setBackgroundColor(colors.black)
