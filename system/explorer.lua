@@ -10,59 +10,63 @@ local currPage = 1
 local totalPage = 1
 local speaker
 local dirFlag = true
+local dirEndPage = 1
+local dirShows = 0
 local dirNum = 0
 local fileNum = 0
 
 speaker = peripheral.find("speaker")
 
 
-local function refresh(dir)
-    
+local function refresh(dir, pageNum)
     if dir == nil then dir = "" end
+    if pageNum == nil or pageNum == 0 then pageNum = 1 end
     showAll()
+    if dirName[1] == nil then dirFlag = false end
     local t = 0
     local tY = 5
     totalPage = 0
-    if dirFlag then
+    if dirFlag == true then 
         for i, v in ipairs(dirName) do
-
-            if tY <= 16 and dirFlag then
-                if i == #dirY then
-                    dirFlag = false
-                end
-    
+        
+            if tY <= 17 then
                 if dirName[i] ~= nil then
                     --showNormalText(12, tY, "                                        ")
                     showSingleSelectableText(12, tY, dirName[i])
-                    
                     tY = tY + 1
+                    dirShows = dirShows + 1
                 end
                 
+                if i == #dirName then
+                    dirFlag = false
+                    dirEndPage = pageNum
+                end
             end
         end
-    
     end
     
-
+    
     for i, v in ipairs(fileName) do
-        if not dirFlag then
-            if fileName[i] ~= nil and tY <= 16 then
-                --showNormalText(12, tY, "                                        ")
-                showSingleSelectableText(12, tY, fileName[i])
-                tY = tY + 1
-            end
+        if dirFlag == true then return end
+
+        local calcId = 0
+        if pageNum <= 1 then calcId = i 
+        else calcId = i + 13 * (pageNum - 1) - dirShows end
+
+        if fileName[calcId] ~= nil and tY <= 17 then
+            --showNormalText(12, tY, "                                        ")
+            showSingleSelectableText(12, tY, fileName[calcId])
+            tY = tY + 1
         end
 
 
     end
 
-    if t <= 12 then
-        totalPage = math.ceil((fileNum + dirNum) / 12)
-    else
-        totalPage = 1
-    end
-    
-    showNormalText(12, 17, "Page " .. currPage .. "/" .. totalPage)
+    totalPage = math.ceil((fileNum + dirNum) / 13)
+    showNormalText(12, 18, "Page " .. currPage .. "/" .. totalPage, colors.blue)
+
+    if (currPage - 1) < 1 then disableObj(1, 3) end
+    if (currPage + 1) > totalPage then disableObj(1, 5) end
 end
 
 function renderExplorer(dir)
@@ -72,17 +76,15 @@ function renderExplorer(dir)
     dirY = {}
     fileY = {}
     totalPage = 1
-    dirFlag = true
     fileNum = 0
     dirNum = 0
     resetSelectedText()
     deleteAllObj()
     clearsc()
-    showNormalText(1, 1, "PaletteOS| PaletteOS File Explorer Alpha (U)")
+    showNormalText(1, 1, "PaletteOS| File Explorer")
     showNormalText(1, 2, "---------+------------------------------------------")
-    showNormalText(12, 3, dir)
+    showNormalText(12, 3, "@" .. dir)
     showNormalText(11, 4, "------------------------------------------")
-    showNormalText(12, 18, "#You know, it's alpha, bugs are normal#", colors.red)
     showButton(1, 3, "[Page Up]", pageupBtn)
     showButton(1, 5, "[Page Dn]", pagednBtn)
     showButton(1, 7, "[  <--  ]", previousDirBtn)
@@ -118,7 +120,7 @@ end
 
 function refreshBtn()
     renderExplorer(currDir)
-    refresh(currDir)
+    refresh(currDir, currPage)
 end
 
 function deleteBtn()
@@ -134,7 +136,11 @@ function pageupBtn()
     if not ((currPage - 1) < 1) then
         currPage = currPage - 1
         renderExplorer(currDir)
-        refresh(currDir)
+        if dirEndPage == currPage then 
+            dirFlag = true 
+            dirShows = 0
+        end
+        refresh(currDir, currPage)
     end
     
 end
@@ -143,8 +149,12 @@ function pagednBtn()
     
     if ((currPage + 1) <= totalPage) then
         currPage = currPage + 1
+        if dirEndPage == currPage then 
+            dirFlag = true 
+            dirShows = 0
+        end
         renderExplorer(currDir)
-        refresh(currDir)
+        refresh(currDir, currPage)
     end
 
 end
@@ -156,7 +166,9 @@ function enterDirBtn()
     if string.sub(v, string.len(v)) == "/" then
         currDir = currDir .. v
         renderExplorer(currDir)
-        refresh(currDir)
+        dirFlag = true
+        dirShows = 0
+        refresh(currDir, 1)
         dirHistoryId = dirHistoryId + 1
         dirHistory[dirHistoryId] = currDir
         if currDir ~= "/" then
@@ -187,7 +199,10 @@ function previousDirBtn()
     currDir = dirHistory[dirHistoryId]
     dirHistory[dirHistoryId + 1] = nil
     renderExplorer(currDir)
-    refresh(currDir)
+    dirFlag = true
+    dirShows = 0
+    currPage = 1
+    refresh(currDir, currPage)
     if currDir == "/" then
         disableObj(1, 7)
     end
@@ -195,7 +210,7 @@ end
 
 
 function showAll()
-    local tList = fs.list(currDir .. "*")
+    local tList = fs.list(currDir, "*")
     local j = 5
     for i, v in ipairs(tList) do
         if fs.isDir(currDir .. v) then
@@ -215,15 +230,40 @@ end
 
 
 function enterExplorer()
+    dirFlag = true
+    dirShows = 0
     renderExplorer(currDir)
-    refresh(currDir)
+    refresh(currDir, 1)
 end
 
+local bgColor
+
+themeR = io.open("system/settings/theme.data", "r")
+if themeR == nil then
+    local themeNew = io.open("system/settings/theme.data", "w")
+    themeNew:write("lightGray")
+    themeNew:close()
+    themeR:close()
+end
+
+local themeF = io.open("system/settings/theme.data", "r")
+local themeStr = themeF:read()
+themeF:close()
 
 
-iniRenderFunc = enterExplorer
+if themeStr ~= nil then
+    if themeStr == "lightGray" then
+        bgColor = colors.lightGray
+    end
+    if themeStr == "lightBlue" then
+        bgColor = colors.lightBlue
+    end
+    if themeStr == "pink" then
+        bgColor = colors.pink
+    end
+end
 
-main()
+initialize(enterExplorer, bgColor)
 
 
 

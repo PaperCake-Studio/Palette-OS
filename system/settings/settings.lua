@@ -22,8 +22,15 @@ local passwdChange = ""
 local fullnameChange = ""
 local oldPasswdWrote = ""
 
+local themeStr
+local bgColor
+
 function profilePage()
     changePage(2)
+end
+
+function themePage()
+    changePage(4)
 end
 
 function changeProfileBtn()
@@ -92,6 +99,34 @@ function newFullnameAct(flag, val)
     else fullnameChange = val end
 end
 
+
+function lightGrayTheme() 
+    writeThemeConfig("lightGray")
+end
+
+function lightBlueTheme()
+    writeThemeConfig("lightBlue")
+end
+
+function pinkTheme()
+    writeThemeConfig("pink")
+end
+
+function writeThemeConfig(str)
+    local file = io.open("system/settings/theme.data", "w")
+    file:write(str)
+    file:close()
+    local file2 = io.open("system/settings/.setupdone", "w")
+    file2:write("Nothing here")
+    file2:close()
+    showReminder(24, 3, "Chosen! Reboot to apply all!")
+    sleep(0.75)
+    clearsc()
+    deleteAllObj()
+    fetchTheme()
+    initialize(renderSettingsPage, bgColor)
+end
+
 function renderSettingsPage()
     deleteAllObj()
     clearsc()
@@ -114,6 +149,7 @@ function renderSettingsPage()
     end
     showButton(1, 3, "[Overall]", mainPage)
     showButton(1, 5, "[Profile]", profilePage)
+    showButton(1, 7, "[ Theme ]", themePage)
     
     if page == 1 then
         --overall page
@@ -152,9 +188,69 @@ function renderSettingsPage()
         showTextField(27, 12, 22, newPasswdAct)
         showButton(41, 14, "[Cancel]", changeProfileBtn)
         showButton(42, 15, "[Apply]", applyChangesBtn)
+    elseif page == 4 then
+        disableObj(1, 7)
+        showNormalText(14, 4, "Current Theme:")
+        showNormalText(14, 5, themeStr, colors.blue)
+
+        showNormalText(14, 7, "---------", nil, colors.lightGray)
+        showNormalText(14, 8, "LightGray", nil, colors.lightGray)
+        showNormalText(14, 9, "---------", nil, colors.lightGray)
+        showNormalText(14, 11, "---------", nil, colors.lightBlue)
+        showNormalText(14, 12, "LightBlue", nil, colors.lightBlue)
+        showNormalText(14, 13, "---------", nil, colors.lightBlue)
+        showNormalText(14, 15, "---------", nil, colors.pink)
+        showNormalText(14, 16, "  Pink   ", nil, colors.pink)
+        showNormalText(14, 17, "---------", nil, colors.pink)
+
+        showButton(25, 9, "[Choose]", lightGrayTheme)
+        showButton(25, 13, "[Choose]", lightBlueTheme)
+        showButton(25, 17, "[Choose]", pinkTheme)
+
+        if themeStr == "lightGray" then
+            showButton(25, 9, "[Chosen]", lightGrayTheme)
+            disableObj(25, 9)
+        end
+        if themeStr == "lightBlue" then
+            showButton(25, 13, "[Chosen]", lightGrayTheme)
+            disableObj(25, 13)
+        end
+        if themeStr == "pink" then
+            showButton(25, 17, "[Chosen]", lightGrayTheme)
+            disableObj(25, 17)
+        end
     end
 end
 
-iniRenderFunc = renderSettingsPage
 
-main()
+
+
+function fetchTheme()
+    themeR = io.open("system/settings/theme.data", "r")
+    if themeR == nil then
+        local themeNew = io.open("system/settings/theme.data", "w")
+        themeNew:write("lightGray")
+        themeNew:close()
+        themeR:close()
+    end
+    
+    local themeF = io.open("system/settings/theme.data", "r")
+    themeStr = themeF:read()
+    themeF:close()
+    
+    
+    if themeStr ~= nil then
+        if themeStr == "lightGray" then
+            bgColor = colors.lightGray
+        end
+        if themeStr == "lightBlue" then
+            bgColor = colors.lightBlue
+        end
+        if themeStr == "pink" then
+            bgColor = colors.pink
+        end
+    end
+end
+
+fetchTheme()
+initialize(renderSettingsPage, bgColor)

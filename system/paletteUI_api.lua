@@ -20,6 +20,8 @@ quitFlag = false;
 local haveSpeaker = false
 local PaletteUITest = ""
 
+local globalBgColor
+
 
 local speaker = peripheral.find("speaker")
 if speaker ~= nil then
@@ -31,9 +33,11 @@ end
 ---@param y number
 ---@param str string
 ---@param color any
-function showNormalText(x, y, str, color)
+---@param bgColor any
+function showNormalText(x, y, str, color, bgColor)
     if color == nil then color = colors.black end
-    term.setBackgroundColor(colors.lightGray)
+    if bgColor == nil then bgColor = globalBgColor end
+    term.setBackgroundColor(bgColor)
     term.setTextColor(color)
     term.setCursorPos(x, y)
     term.write(str)
@@ -84,7 +88,7 @@ end
 ---@param y number
 ---@param str string
 function showSelectableText(x, y, str)
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
     term.setTextColor(colors.black)
     term.setCursorPos(x, y)
     term.write(str)
@@ -105,7 +109,7 @@ local function showSelectedText(x, y, str)
     term.setCursorPos(x, y)
     term.write(str)
     
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end
 
 local function showDisabledButton(x, y, str)
@@ -114,7 +118,7 @@ local function showDisabledButton(x, y, str)
     term.setCursorPos(x, y)
     term.write(str)
     
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end
 
 local function showEnableButton(x, y, str)
@@ -123,7 +127,7 @@ local function showEnableButton(x, y, str)
     term.setCursorPos(x, y)
     term.write(str)
     
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end 
 
 local function showDisabledField(x, y, i)
@@ -139,7 +143,7 @@ local function showDisabledField(x, y, i)
     term.setCursorPos(x, y)
     term.write(objActFunc[i](true))
     
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end
 
 local function showEnableField(x, y, i)
@@ -154,7 +158,7 @@ local function showEnableField(x, y, i)
     term.setCursorPos(x, y)
     term.write(objActFunc[i](true))
 
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end
 
 ---Disable an object
@@ -249,7 +253,7 @@ end
 ---@param y number
 ---@param str string
 function showSingleSelectableText(x, y, str)
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
     term.setTextColor(colors.black)
     term.setCursorPos(x, y)
     term.write(str)
@@ -263,7 +267,7 @@ function showSingleSelectableText(x, y, str)
     isEnable[#isEnable + 1] = true
     strList[#strList + 1] = str
 
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
 end
 
 local function createTextField(x, y, str, ini, w, actFunc, i)
@@ -408,7 +412,7 @@ function showAlert(x, y, str)
     previousX = x
     previousY = y
     previousStrLen = #str
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
     term.setTextColor(colors.red)
     term.setCursorPos(x, y)
     term.write(str)
@@ -438,7 +442,7 @@ function showReminder(x, y, str)
     previousX = x
     previousY = y
     previousStrLen = #str
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
     term.setTextColor(colors.green)
     term.setCursorPos(x, y)
     term.write(str)
@@ -449,7 +453,7 @@ end
 
 ---Clear the screen
 function clearsc()
-    term.setBackgroundColor(colors.lightGray)
+    term.setBackgroundColor(globalBgColor)
     term.clear()
 end
 
@@ -641,19 +645,21 @@ local function detectKey()
     end
 end
 
-iniRenderFunc = renderMain
 detectClickFunc = detectClick
 inputLetterFunc = inputLetter
 detectKeyFunc = detectKey
 
 
 
---main
-function main()
+---initialize
+function initialize(func, color)
+    if color == nil then color = colors.lightGray end
+    if func == nil then func = renderMain end
+    globalBgColor = color
     clearsc()
     term.setPaletteColor(colors.lightGray, 0xe0e0e0)
     term.setPaletteColor(colors.gray, 0x808080)
-    iniRenderFunc()
+    func()
     while true do
         if quitFlag == true then break end
         parallel.waitForAny(detectClickFunc, detectKeyFunc)

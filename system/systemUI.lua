@@ -3,7 +3,7 @@ require("paletteUI_api")
 local passwdWrote
 local shortFileName = {}
 local fileName = {}
-
+local bgColor
 
 
 local function showMessage(isAlert, str)
@@ -84,7 +84,7 @@ function renderMain()
     
     switchPage()
     clearsc()
-    showNormalText(1, 1, "PaletteOS", colors.red)
+    showNormalText(1, 1, "PaletteOS", colors.blue)
     showNormalText(10, 1, "|")
     showButton(12, 1, "[Power]", shutdown)
     showButton(20, 1, "[Reboot]", reboot)
@@ -101,8 +101,8 @@ function renderMain()
     shortFileName = {}
     fileName = {}
 
-    showSingleSelectableText(2, 4, "Files Alpha")
-    table.insert(shortFileName, "Files Alpha")
+    showSingleSelectableText(2, 4, "Explorer")
+    table.insert(shortFileName, "Explorer")
     table.insert(fileName, "explorer")
     
     showSingleSelectableText(2, 6, "Settings")
@@ -158,7 +158,7 @@ end
 
 function renderLogin()
     switchPage()
-    clearsc()
+    clearsc(bgColor)
     showNormalText(21, 2, "User Login")
     showNormalText(17, 4, "Palette OS 23.01/01")
     local nameF = io.open("system/settings/user.data", "r")
@@ -188,7 +188,6 @@ end
 
 
 
-iniRenderFunc = renderLogin
 
 local setupdone = io.open("system/settings/.setupdone", "r")
 local nameF = io.open("system/settings/user.data", "r")
@@ -198,8 +197,31 @@ end
 setupdone:close()
 nameF:close()
 
+themeR = io.open("system/settings/theme.data", "r")
+if themeR == nil then
+    local themeNew = io.open("system/settings/theme.data", "w")
+    themeNew:write("lightGray")
+    themeNew:close()
+    themeR:close()
+end
 
-main()
+local themeF = io.open("system/settings/theme.data", "r")
+local themeStr = themeF:read()
+themeF:close()
+
+
+if themeStr ~= nil then
+    if themeStr == "lightGray" then
+        bgColor = colors.lightGray
+    end
+    if themeStr == "lightBlue" then
+        bgColor = colors.lightBlue
+    end
+    if themeStr == "pink" then
+        bgColor = colors.pink
+    end
+end
+initialize(renderLogin, bgColor)
 while true do
     multishell.setTitle(multishell.getCurrent(), "PaletteOS")
 end
