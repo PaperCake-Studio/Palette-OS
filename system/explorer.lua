@@ -238,13 +238,15 @@ end
 
 local bgColor
 
-themeR = io.open("system/settings/theme.data", "r")
+local themeR = io.open("system/settings/theme.data", "r")
 if themeR == nil then
     local themeNew = io.open("system/settings/theme.data", "w")
     themeNew:write("lightGray")
     themeNew:close()
 end
-themeR:close()
+if themeR ~= nil then themeR:close() end
+
+
 
 local themeF = io.open("system/settings/theme.data", "r")
 local themeStr = themeF:read()

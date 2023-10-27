@@ -194,16 +194,19 @@ local nameF = io.open("system/settings/user.data", "r")
 if setupdone == nil or nameF == nil then
     shell.run("system/settings/setup.lua")
 end
-setupdone:close()
-nameF:close()
+if setupdone ~= nil then setupdone:close() end
+if nameF ~= nil then nameF:close() end
 
-themeR = io.open("system/settings/theme.data", "r")
+
+local themeR = io.open("system/settings/theme.data", "r")
 if themeR == nil then
     local themeNew = io.open("system/settings/theme.data", "w")
     themeNew:write("lightGray")
     themeNew:close()
 end
-themeR:close()
+if themeR ~= nil then themeR:close() end
+
+
 
 local themeF = io.open("system/settings/theme.data", "r")
 local themeStr = themeF:read()

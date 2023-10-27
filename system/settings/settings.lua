@@ -226,30 +226,32 @@ end
 
 
 function fetchTheme()
-    themeR = io.open("system/settings/theme.data", "r")
-    if themeR == nil then
-        local themeNew = io.open("system/settings/theme.data", "w")
-        themeNew:write("lightGray")
-        themeNew:close()
+    local themeR = io.open("system/settings/theme.data", "r")
+if themeR == nil then
+    local themeNew = io.open("system/settings/theme.data", "w")
+    themeNew:write("lightGray")
+    themeNew:close()
+end
+if themeR ~= nil then themeR:close() end
+
+
+
+local themeF = io.open("system/settings/theme.data", "r")
+local themeStr = themeF:read()
+themeF:close()
+
+
+if themeStr ~= nil then
+    if themeStr == "lightGray" then
+        bgColor = colors.lightGray
     end
-    themeR:close()
-    
-    local themeF = io.open("system/settings/theme.data", "r")
-    themeStr = themeF:read()
-    themeF:close()
-    
-    
-    if themeStr ~= nil then
-        if themeStr == "lightGray" then
-            bgColor = colors.lightGray
-        end
-        if themeStr == "lightBlue" then
-            bgColor = colors.lightBlue
-        end
-        if themeStr == "pink" then
-            bgColor = colors.pink
-        end
+    if themeStr == "lightBlue" then
+        bgColor = colors.lightBlue
     end
+    if themeStr == "pink" then
+        bgColor = colors.pink
+    end
+end
 end
 
 fetchTheme()
