@@ -231,8 +231,8 @@ function fetchTheme()
         local themeNew = io.open("system/settings/theme.data", "w")
         themeNew:write("lightGray")
         themeNew:close()
-        themeR:close()
     end
+    themeR:close()
     
     local themeF = io.open("system/settings/theme.data", "r")
     themeStr = themeF:read()

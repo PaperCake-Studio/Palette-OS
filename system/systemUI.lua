@@ -202,8 +202,8 @@ if themeR == nil then
     local themeNew = io.open("system/settings/theme.data", "w")
     themeNew:write("lightGray")
     themeNew:close()
-    themeR:close()
 end
+themeR:close()
 
 local themeF = io.open("system/settings/theme.data", "r")
 local themeStr = themeF:read()
