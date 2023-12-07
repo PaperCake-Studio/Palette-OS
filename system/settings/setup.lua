@@ -66,9 +66,9 @@ function writeThemeConfig(str)
 end
 
 function renderMainSetup()
-    showNormalText(10, 1, "PaletteOS 23.01/01 Silicon Setup")
+    showNormalText(10, 1, "PaletteOS 23.01/02 Silicon Setup")
     showNormalText(1, 2, "----------------------------------------------------")
-    showNormalText(7, 4, "Welcome to PaletteOS 23.01/01 Silicon, ")
+    showNormalText(7, 4, "Welcome to PaletteOS 23.01/02 Silicon, ")
     showNormalText(7, 5, "Follow the steps below to start using.")
     showNormalText(19, 7, "Create a user:")
     showNormalText(10, 9, "Fullname:")
@@ -83,9 +83,9 @@ function renderMainSetup()
 end
 
 function renderThemePage() 
-    showNormalText(10, 1, "PaletteOS 23.01/01 Silicon Setup")
+    showNormalText(10, 1, "PaletteOS 23.01/02 Silicon Setup")
     showNormalText(1, 2, "----------------------------------------------------")
-    showNormalText(7, 4, "Welcome to PaletteOS 23.01/01 Silicon, ")
+    showNormalText(7, 4, "Welcome to PaletteOS 23.01/02 Silicon, ")
     showNormalText(7, 5, "Follow the steps below to start using.")
     showNormalText(18, 7, "Choose a theme:")
     showNormalText(12, 9, "---------", nil, colors.lightGray)
