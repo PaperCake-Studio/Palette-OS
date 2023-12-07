@@ -160,7 +160,7 @@ function renderLogin()
     switchPage()
     clearsc(bgColor)
     showNormalText(21, 2, "User Login")
-    showNormalText(17, 4, "Palette OS 23.01/01")
+    showNormalText(17, 4, "Palette OS 23.01/02")
     local nameF = io.open("system/settings/user.data", "r")
     if nameF ~= nil then
         local username = nameF:read()
