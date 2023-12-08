@@ -1,4 +1,5 @@
 require("paletteUI_api")
+require("/system/apis/base64")
 
 local passwdWrote
 local shortFileName = {}
@@ -145,9 +146,15 @@ function renderMain()
 end
 
 local passwd 
+local salt
+
+function calcPassword(password, s)
+    local temp = password .. s
+    return encodeBase64(temp)
+end
 
 function loginBtn()
-    if passwdWrote == passwd then
+    if calcPassword(passwdWrote, salt) == passwd then
         showReminder(22, 13, "Welcome!")
         sleep(0.5)
         renderMain()
@@ -159,26 +166,20 @@ end
 function renderLogin()
     switchPage()
     clearsc(bgColor)
-    showNormalText(21, 2, "User Login")
-    showNormalText(17, 4, "Palette OS 23.01/02")
+    showCenteredText(2, "User Login")
+    showCenteredText(4, "Palette OS 23.01/03")
     local nameF = io.open("system/settings/user.data", "r")
     if nameF ~= nil then
         local username = nameF:read()
-        passwd = nameF:read()
         local fullname = nameF:read()
+        passwd = nameF:read()
+        salt = nameF:read()
         nameF:close()
         if username == "" or username == nil or passwd == "" or passwd == nil or fullname == "" or fullname == nil then
             shell.run("system/settings/setup.lua")
         end
 
-        local nameLenT = string.len(username .. " @ " .. fullname)
-        local nameLen
-        if nameLenT % 2 == 0 then
-            nameLen = (52 - nameLenT) / 2
-        else
-            nameLen = (52 - (nameLenT + 1)) / 2
-        end
-        showNormalText(nameLen, 7, username .. " @ " .. fullname)
+        showCenteredText(7, username .. " @ " .. fullname)
         showTextField(15, 9, 22, userLogin)
         showButton(30, 11, "[Login]", loginBtn)
     else

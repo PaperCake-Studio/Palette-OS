@@ -44,6 +44,19 @@ function showNormalText(x, y, str, color, bgColor)
 
 end
 
+---Create centered normal text
+---@param y number
+---@param str string
+---@param color any
+---@param bgColor any
+---@param doFloor bool
+function showCenteredText(y, str, color, bgColor, doFloor)
+    if doFloor == nil then doFloor = true end
+    local x = (52 - string.len(str)) / 2
+    if doFloor then x = math.floor(x) else x = math.ceil(x) end
+    showNormalText(x, y, str, color, bgColor)
+end
+
 ---Create a button runs the function when pressed
 ---@param x number
 ---@param y number
@@ -54,15 +67,15 @@ function showButton(x, y, str, actFunc)
     term.setTextColor(colors.white)
     term.setCursorPos(x, y)
     term.write(str)
-
-    objAreaMinX[#objAreaMinX + 1] = x
-    objAreaMaxX[#objAreaMaxX + 1] = x + string.len(str)
-    objAreaY[#objAreaY + 1] = y
-    objActFunc[#objActFunc + 1] = actFunc
-    objType[#objType + 1] = "B"
-    objMaxWidth[#objMaxWidth + 1] = #str
-    isEnable[#isEnable + 1] = true
-    strList[#strList + 1] = str
+    local i = #objAreaMinX + 1
+    objAreaMinX[i] = x
+    objAreaMaxX[i] = x + string.len(str)
+    objAreaY[i] = y
+    objActFunc[i] = actFunc
+    objType[i] = "B"
+    objMaxWidth[i] = #str
+    isEnable[i] = true
+    strList[i] = str
     
     term.setBackgroundColor(colors.lightGray)
 end
@@ -93,14 +106,15 @@ function showSelectableText(x, y, str)
     term.setCursorPos(x, y)
     term.write(str)
 
-    objAreaMinX[#objAreaMinX + 1] = x
-    objAreaMaxX[#objAreaMaxX + 1] = x + string.len(str)
-    objAreaY[#objAreaY + 1] = y
-    objActFunc[#objActFunc + 1] = nil
-    objType[#objType + 1] = "S"
-    objMaxWidth[#objMaxWidth + 1] = #str
-    isEnable[#isEnable + 1] = true
-    strList[#strList + 1] = str
+    local i = #objAreaMinX + 1
+    objAreaMinX[i] = x
+    objAreaMaxX[i] = x + string.len(str)
+    objAreaY[i] = y
+    objActFunc[i] = nil
+    objType[i] = "S"
+    objMaxWidth[i] = #str
+    isEnable[i] = true
+    strList[i] = str
 end
 
 local function showSelectedText(x, y, str)
@@ -258,14 +272,15 @@ function showSingleSelectableText(x, y, str)
     term.setCursorPos(x, y)
     term.write(str)
 
-    objAreaMinX[#objAreaMinX + 1] = x
-    objAreaMaxX[#objAreaMaxX + 1] = x + string.len(str)
-    objAreaY[#objAreaY + 1] = y
-    objActFunc[#objActFunc + 1] = nil
-    objType[#objType + 1] = "G"
-    objMaxWidth[#objMaxWidth + 1] = #str
-    isEnable[#isEnable + 1] = true
-    strList[#strList + 1] = str
+    local i = #objAreaMinX + 1
+    objAreaMinX[i] = x
+    objAreaMaxX[i] = x + string.len(str)
+    objAreaY[i] = y
+    objActFunc[i] = nil
+    objType[i] = "G"
+    objMaxWidth[i] = #str
+    isEnable[i] = true
+    strList[i] = str
 
     term.setBackgroundColor(globalBgColor)
 end
@@ -291,14 +306,15 @@ local function createTextField(x, y, str, ini, w, actFunc, i)
             t = t .. " "
         end
 
-        objAreaMinX[#objAreaMinX + 1] = x
-        objAreaMaxX[#objAreaMaxX + 1] = x + w
-        objAreaY[#objAreaY + 1] = y
-        objActFunc[#objActFunc + 1] = actFunc
-        objType[#objType + 1] = "F"
-        objMaxWidth[#objMaxWidth + 1] = w - 1
-        isEnable[#isEnable + 1] = true
-        strList[#strList + 1] = str
+        local i = #objAreaMinX + 1
+        objAreaMinX[i] = x
+        objAreaMaxX[i] = x + w
+        objAreaY[i] = y
+        objActFunc[i] = actFunc
+        objType[i] = "F"
+        objMaxWidth[i] = w - 1
+        isEnable[i] = true
+        strList[i] = str
         
 
         term.write(t)
@@ -330,6 +346,7 @@ function getSelectedText()
             return strList[i]
         end
     end
+    return nil
 end
 
 ---Reset current selecting single-selectable text
@@ -552,6 +569,8 @@ local function detectClick()
                         
                     elseif objType[i] == "B" then
                         showPressedButton(objAreaMinX[i], objAreaY[i], strList[i])
+                        --print(objActFunc[i]) -- test
+                        --print(x .. " " .. y) -- test
                         objActFunc[i]()
                         if haveSpeaker then
                             speaker.playSound("ui.button.click")

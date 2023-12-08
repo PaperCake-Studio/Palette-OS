@@ -14,6 +14,9 @@ local dirEndPage = 1
 local dirShows = 0
 local dirNum = 0
 local fileNum = 0
+local showPage = 1
+
+local creatingFileName
 
 speaker = peripheral.find("speaker")
 
@@ -69,6 +72,43 @@ local function refresh(dir, pageNum)
     if (currPage + 1) > totalPage then disableObj(1, 5) end
 end
 
+
+function creatingFileNameActFunc(f, v)
+    if f then return creatingFileName
+    else creatingFileName = v end
+end
+
+function createBtn() 
+    deleteAllObj()
+    clearsc()
+    showCenteredText(4, "Please Enter the name of your file / folder:")
+    showTextField(3, 6, 46, creatingFileNameActFunc)
+    showSingleSelectableText(19, 8, "File")
+    showSingleSelectableText(26, 8, "Folder")
+    showButton(41, 10, "[Create]", createBtnInside)
+    showButton(32, 10, "[Cancel]", enterExplorer)
+end
+
+
+function createBtnInside()
+    if getSelectedText() == nil then
+        showAlert(12, 12, "You haven't choose the type!")
+    else
+        if getSelectedText() == "File" then 
+            local f = io.open(currDir .. creatingFileName, "w")
+            f:close()
+        end
+        if getSelectedText() == "Folder" then
+             shell.run("mkdir " .. creatingFileName) 
+        end
+        showReminder(22, 12, "Created!")
+        sleep(0.5)
+        enterExplorer()
+    end
+end
+
+
+
 function renderExplorer(dir)
     if not (id == nil or id <= totalPage) then return end
     dirName = {}
@@ -83,6 +123,7 @@ function renderExplorer(dir)
     clearsc()
     showNormalText(1, 1, "PaletteOS| File Explorer")
     showNormalText(1, 2, "---------+------------------------------------------")
+
     showNormalText(12, 3, "@" .. dir)
     showNormalText(11, 4, "------------------------------------------")
     showButton(1, 3, "[Page Up]", pageupBtn)
@@ -92,6 +133,7 @@ function renderExplorer(dir)
     showButton(1, 11, "[  Edit ]", editBtn)
     showButton(1, 13, "[ Delete]", deleteBtn)
     showButton(1, 15, "[Refresh]", refreshBtn)
+    showButton(1, 17, "[ Create]", createBtn)
     --disableObj(1, 3)
     --disableObj(1, 5)
     if dirHistoryId == 1 then
@@ -108,27 +150,25 @@ function renderExplorer(dir)
         end
         
     end
-    
 
     
     
     
-    
-    
+
 end
 
 
+
+
 function refreshBtn()
-    renderExplorer(currDir)
-    refresh(currDir, currPage)
+    enterExplorer()
 end
 
 function deleteBtn()
     local v = getSelectedText()
     if v ~= nil then
-        pcall(fs.delete, currDir .. v)
-        renderExplorer(currDir)
-        refresh(currDir)
+        shell.run("delete " .. currDir .. v)
+        refreshBtn()
     end
 end
 
@@ -209,6 +249,9 @@ function previousDirBtn()
 end
 
 
+
+
+
 function showAll()
     local tList = fs.list(currDir, "*")
     local j = 5
@@ -233,7 +276,7 @@ function enterExplorer()
     dirFlag = true
     dirShows = 0
     renderExplorer(currDir)
-    refresh(currDir, 1)
+    refresh(currDir, currPage)
 end
 
 local bgColor

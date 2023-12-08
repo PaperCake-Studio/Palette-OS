@@ -1,4 +1,6 @@
 require("/system/paletteUI_api")
+require("/system/apis/base64")
+
 local page = 1
 local speaker = peripheral.find("speaker")
 
@@ -42,6 +44,19 @@ function changeProfileBtn()
     
 end
 
+local salt
+
+function calcPassword(password)
+    salt = generateSalt(6)
+    local temp = password .. salt
+    return encodeBase64(temp)
+end
+
+function verifyPassword(password, s)
+    local temp = password .. s
+    return encodeBase64(temp)
+end
+
 function applyChangesBtn()
     if oldPasswdWrote == "" then
         showAlert(23, 16, "Field is empty!")
@@ -51,7 +66,14 @@ function applyChangesBtn()
         return
     end
 
-    if oldPasswdWrote == passwd then
+    local f = io.open("/system/settings/user.data", "r")
+    local n = f:read()
+    local fu = f:read()
+    local oldPass = f:read()
+    local oldSalt = f:read()
+    f:close()
+
+    if verifyPassword(oldPasswdWrote, salt) == passwd then
         if string.gsub(usernameChange, " ", "") == "" then
             usernameChange = username
         end
@@ -63,7 +85,7 @@ function applyChangesBtn()
         end
 
         local file = io.open("system/settings/user.data", "w")
-        file:write(usernameChange .. "\n" .. passwdChange .. "\n" .. fullnameChange)
+        file:write(usernameChange .. "\n" .. fullnameChange .. "\n" .. calcPassword(passwdChange) .. "\n" .. salt)
         file:close()
         showReminder(27, 16, "Changed!")
         if speaker ~= nil then
@@ -127,16 +149,23 @@ function writeThemeConfig(str)
     initialize(renderSettingsPage, bgColor)
 end
 
+local function getCurrentTheme() 
+    if bgColor == colors.lightGray then return "Classic" end
+    if bgColor == colors.lightBlue then return "Aqua" end
+    if bgColor == colors.pink then return "Pinky" end
+end
+
 function renderSettingsPage()
     deleteAllObj()
     clearsc()
     local userData = io.open("system/settings/user.data", "r")
     username = userData:read()
-    passwd = userData:read()
     fullName = userData:read()
+    passwd = userData:read()
+    salt = userData:read()
 
     showNormalText(1, 1, "PaletteOS|")
-    showNormalText(12, 1, "Settings - PaletteOS 23.01/02")
+    showNormalText(12, 1, "Settings - PaletteOS 23.01/03")
     showNormalText(1, 2, "---------+------------------------------------------")
     for i = 3, 20 do
         if i % 2 == 0 then
@@ -156,7 +185,7 @@ function renderSettingsPage()
         
         disableObj(1, 3)
         showNormalText(14, 4, "PaletteOS Version:")
-        showNormalText(14, 5, "PaletteOS 23.01/02 Silicon")
+        showNormalText(14, 5, "PaletteOS 23.01/03 Silicon")
 
         showNormalText(14, 8, "PaletteOS is given to:")
         showNormalText(14, 9, username .. " @")
@@ -165,7 +194,7 @@ function renderSettingsPage()
         showNormalText(14, 14, "BlueStarrySky")
         showNormalText(14, 15, "- PaletteOS & PaletteUI")
 
-        showNormalText(14, 18, "PaletteOS 23.01/02 Made with Love")
+        showNormalText(14, 18, "PaletteOS 23.01/03 Made with Love")
     elseif page == 2 then
         disableObj(1, 5)
         showNormalText(14, 4, "Profile Details:")
@@ -191,16 +220,15 @@ function renderSettingsPage()
     elseif page == 4 then
         disableObj(1, 7)
         showNormalText(14, 4, "Current Theme:")
-        showNormalText(14, 5, themeStr, colors.blue)
-
+        showNormalText(14, 5, getCurrentTheme(), colors.blue)
         showNormalText(14, 7, "---------", nil, colors.lightGray)
-        showNormalText(14, 8, "LightGray", nil, colors.lightGray)
+        showNormalText(14, 8, " Classic ", nil, colors.lightGray)
         showNormalText(14, 9, "---------", nil, colors.lightGray)
         showNormalText(14, 11, "---------", nil, colors.lightBlue)
-        showNormalText(14, 12, "LightBlue", nil, colors.lightBlue)
+        showNormalText(14, 12, "  Aqua   ", nil, colors.lightBlue)
         showNormalText(14, 13, "---------", nil, colors.lightBlue)
         showNormalText(14, 15, "---------", nil, colors.pink)
-        showNormalText(14, 16, "  Pink   ", nil, colors.pink)
+        showNormalText(14, 16, "  Pinky  ", nil, colors.pink)
         showNormalText(14, 17, "---------", nil, colors.pink)
 
         showButton(25, 9, "[Choose]", lightGrayTheme)
@@ -240,6 +268,7 @@ local themeF = io.open("system/settings/theme.data", "r")
 local themeStr = themeF:read()
 themeF:close()
 
+local currTheme
 
 if themeStr ~= nil then
     if themeStr == "lightGray" then

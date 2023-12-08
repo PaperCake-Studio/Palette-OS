@@ -1,4 +1,5 @@
 require("/system/paletteUI_api")
+require("/system/apis/base64")
 local username = ""
 
 function usernameAct(readFlag, val)
@@ -8,10 +9,17 @@ end
 
 local passwd = ""
 local fullname = ""
+local salt
 
 function passwdAct(readFlag, val)
     if readFlag then return passwd
     else passwd = val end
+end
+
+function calcPassword(password)
+    salt = generateSalt(6)
+    local temp = password .. salt
+    return encodeBase64(temp)
 end
 
 function createUserBtn()
@@ -20,7 +28,7 @@ function createUserBtn()
     else
         showReminder(20, 17, "Creating...")
         local file = io.open("system/settings/user.data", "w")
-        file:write(username .. "\n" .. passwd .. "\n" .. fullname)
+        file:write(username .. "\n" .. fullname .. "\n" .. calcPassword(passwd) .. "\n" .. salt)
         file:close()
         showReminder(22, 17, "Created!")
         enableObj(35, 16)
@@ -66,11 +74,11 @@ function writeThemeConfig(str)
 end
 
 function renderMainSetup()
-    showNormalText(10, 1, "PaletteOS 23.01/02 Silicon Setup")
+    showCenteredText(1, "PaletteOS 23.01/03 Silicon Setup")
     showNormalText(1, 2, "----------------------------------------------------")
-    showNormalText(7, 4, "Welcome to PaletteOS 23.01/02 Silicon, ")
-    showNormalText(7, 5, "Follow the steps below to start using.")
-    showNormalText(19, 7, "Create a user:")
+    showCenteredText(4, "Welcome to PaletteOS 23.01/03 Silicon, ")
+    showCenteredText(5, "Follow the steps below to start using.")
+    showCenteredText(7, "Create a user:")
     showNormalText(10, 9, "Fullname:")
     showTextField(19, 9, 22, fullNameAct)
     showNormalText(10, 11, "Username:")
@@ -83,11 +91,11 @@ function renderMainSetup()
 end
 
 function renderThemePage() 
-    showNormalText(10, 1, "PaletteOS 23.01/02 Silicon Setup")
+    showCenteredText(1, "PaletteOS 23.01/03 Silicon Setup")
     showNormalText(1, 2, "----------------------------------------------------")
-    showNormalText(7, 4, "Welcome to PaletteOS 23.01/02 Silicon, ")
-    showNormalText(7, 5, "Follow the steps below to start using.")
-    showNormalText(18, 7, "Choose a theme:")
+    showCenteredText(4, "Welcome to PaletteOS 23.01/03 Silicon, ")
+    showCenteredText(5, "Follow the steps below to start using.")
+    showCenteredText(7, "Choose a theme:")
     showNormalText(12, 9, "---------", nil, colors.lightGray)
     showNormalText(12, 10, "LightGray", nil, colors.lightGray)
     showNormalText(12, 11, "---------", nil, colors.lightGray)
