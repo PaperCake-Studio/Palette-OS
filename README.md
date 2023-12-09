@@ -8,6 +8,15 @@
 **Palette OS** is a Operating System on [CC Tweaked](https://github.com/cc-tweaked/CC-Tweaked), a mod on Minecraft.
 It is special because it has GUI, and the core of our GUI, Palette UI, is always welcome for use. We're glad to see more developers to make more amazing UI apps on **Palette OS**.
 
+## Screenshots
+
+<img alt="Login Page" src="./screenshots/login.png" height=200>
+<img alt="Classic Theme" src="./screenshots/classic.png" height=200>
+<img alt="Aqua Theme" src="./screenshots/aqua.png" height=200>
+<img alt="Pinky Theme" src="./screenshots/pinky.png" height=200>
+<img alt="Settings" src="./screenshots/settings.png" height=200>
+<img alt="Explorer" src="./screenshots/explorer.png" height=200>
+
 ## Install
 To be able to install **Palette OS**, you need the zip file of a specific version. 
 Notice that the `installation.lua` file in the release is only available before the next version has updated on github.
