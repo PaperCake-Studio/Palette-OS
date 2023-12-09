@@ -172,7 +172,7 @@ function renderLogin()
     switchPage()
     clearsc(bgColor)
     showCenteredText(2, "User Login")
-    showCenteredText(4, "Palette OS 23.01/03")
+    showCenteredText(4, "Palette OS 23.02/01")
     local nameF = io.open("system/settings/user.data", "r")
     if nameF ~= nil then
         local username = nameF:read()

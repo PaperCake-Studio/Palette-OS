@@ -165,7 +165,7 @@ function renderSettingsPage()
     salt = userData:read()
 
     showNormalText(1, 1, "PaletteOS|")
-    showNormalText(12, 1, "Settings - PaletteOS 23.01/03")
+    showNormalText(12, 1, "Settings - PaletteOS 23.02/01")
     showNormalText(1, 2, "---------+------------------------------------------")
     for i = 3, 20 do
         if i % 2 == 0 then
@@ -185,7 +185,7 @@ function renderSettingsPage()
         
         disableObj(1, 3)
         showNormalText(14, 4, "PaletteOS Version:")
-        showNormalText(14, 5, "PaletteOS 23.01/03 Silicon")
+        showNormalText(14, 5, "PaletteOS 23.02/01 Nickel")
 
         showNormalText(14, 8, "PaletteOS is given to:")
         showNormalText(14, 9, username .. " @")
@@ -194,7 +194,7 @@ function renderSettingsPage()
         showNormalText(14, 14, "BlueStarrySky")
         showNormalText(14, 15, "- PaletteOS & PaletteUI")
 
-        showNormalText(14, 18, "PaletteOS 23.01/03 Made with Love")
+        showNormalText(14, 18, "PaletteOS 23.02/01 Made with Love")
     elseif page == 2 then
         disableObj(1, 5)
         showNormalText(14, 4, "Profile Details:")
