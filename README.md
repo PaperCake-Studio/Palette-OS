@@ -11,11 +11,29 @@ It is special because it has GUI, and the core of our GUI, Palette UI, is always
 ## Screenshots
 
 <img alt="Login Page" src="./screenshots/login.png" height=200>
+
+*Login Page*
+
 <img alt="Classic Theme" src="./screenshots/classic.png" height=200>
+
+*Classic Theme*
+
 <img alt="Aqua Theme" src="./screenshots/aqua.png" height=200>
+
+*Aqua Theme*
+
 <img alt="Pinky Theme" src="./screenshots/pinky.png" height=200>
+
+*Pinky Theme*
+
 <img alt="Settings" src="./screenshots/settings.png" height=200>
+
+*Settings*
+
 <img alt="Explorer" src="./screenshots/explorer.png" height=200>
+
+*File Explorer*
+
 
 ## Install
 To be able to install **Palette OS**, you need the zip file of a specific version. 
