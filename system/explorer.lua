@@ -126,12 +126,18 @@ function pasteBtn()
             return
         end
         showAlert(34, 5, "Destination exists") 
+        sleep(0.5)
+        refreshBtn()
         return
     elseif fs.isReadOnly(dest) then
         showAlert(28, 5, "Destination is read-only")
+        sleep(0.5)
+        refreshBtn()
         return
     elseif fs.getFreeSpace(dest) < fs.getSize(copiedFileName) then
         showAlert(46, 5, "Not enough space")
+        sleep(0.5)
+        refreshBtn()
         return
     end
 
@@ -195,9 +201,31 @@ function renameBtn()
     showButton(32, 8, "[Cancel]", enterExplorer)
 end
 
+local writtenDir
+
 function dirActFunc(f, v)
-    if f then return currDir
-    else currDir = v end
+    if f then return writtenDir
+    else writtenDir = v end
+end
+
+function visitPath()
+    if fs.isDir(writtenDir) then
+        currDir = writtenDir
+        renderExplorer(currDir)
+        dirFlag = true
+        dirShows = 0
+        refresh(currDir, 1)
+        dirHistoryId = dirHistoryId + 1
+        dirHistory[dirHistoryId] = currDir
+        if currDir ~= "/" then
+            enableObj(7, 3)
+        end
+    else
+        dirActFunc(false, currDir)
+        showAlert(38, 5, "Doesn't exists")
+        sleep(0.5)
+        refreshBtn()
+    end
 end
 
 function renderExplorer(dir)
@@ -214,9 +242,13 @@ function renderExplorer(dir)
     clearsc()
     showNormalText(1, 1, "PaletteOS| File Explorer")
     showNormalText(1, 2, "---------+------------------------------------------")
+    writtenDir = dir
     showTextField(12, 3, 46, dirActFunc)
+    showButton(49, 3, "[>]", visitPath)
+    term.setBackgroundColor(colors.white)
+    term.setTextColor(colors.black)
     term.setCursorPos(12, 3)
-    term.write("@" .. dir)
+    term.write(dir)
     showNormalText(1, 4, "----------------------------------------------------")
     showButton(1, 3, "[^]", pageupBtn)
     showButton(4, 3, "[V]", pagednBtn)
@@ -295,6 +327,7 @@ function enterDirBtn()
     --print(v)
     if string.sub(v, string.len(v)) == "/" then
         currDir = currDir .. v
+        writtenDir = currDir
         renderExplorer(currDir)
         dirFlag = true
         dirShows = 0
@@ -327,6 +360,7 @@ end
 function previousDirBtn()
     dirHistoryId = dirHistoryId - 1
     currDir = dirHistory[dirHistoryId]
+    writtenDir = currDir
     dirHistory[dirHistoryId + 1] = nil
     renderExplorer(currDir)
     dirFlag = true
