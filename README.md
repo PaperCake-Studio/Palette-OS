@@ -1,4 +1,6 @@
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./icon_bright.png">
+  <source media="(prefers-color-scheme: light)" srcset="./icon.png">
   <img alt="Palette OS" src="./icon.png" height=128>
 </picture>
 
