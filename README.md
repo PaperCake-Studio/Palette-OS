@@ -10,27 +10,27 @@ It is special because it has GUI, and the core of our GUI, Palette UI, is always
 
 ## Screenshots
 
-<img alt="Login Page" src="./screenshots/login.png" height=200>
+<img alt="Login Page" src="./screenshots/login.png" height=300>
 
 *Login Page*
 
-<img alt="Classic Theme" src="./screenshots/classic.png" height=200>
+<img alt="Classic Theme" src="./screenshots/classic.png" height=300>
 
 *Classic Theme*
 
-<img alt="Aqua Theme" src="./screenshots/aqua.png" height=200>
+<img alt="Aqua Theme" src="./screenshots/aqua.png" height=300>
 
 *Aqua Theme*
 
-<img alt="Pinky Theme" src="./screenshots/pinky.png" height=200>
+<img alt="Pinky Theme" src="./screenshots/pinky.png" height=300>
 
 *Pinky Theme*
 
-<img alt="Settings" src="./screenshots/settings.png" height=200>
+<img alt="Settings" src="./screenshots/settings.png" height=300>
 
 *Settings*
 
-<img alt="Explorer" src="./screenshots/explorer.png" height=200>
+<img alt="Explorer" src="./screenshots/explorer.png" height=300>
 
 *File Explorer*
 
