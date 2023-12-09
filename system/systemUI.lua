@@ -154,6 +154,10 @@ function calcPassword(password, s)
 end
 
 function loginBtn()
+    if passwdWrote == nil or passwdWrote == "" then 
+        showAlert(18, 13, "Empty Password!") 
+        return
+    end
     if calcPassword(passwdWrote, salt) == passwd then
         showReminder(22, 13, "Welcome!")
         sleep(0.5)
@@ -162,6 +166,7 @@ function loginBtn()
         showAlert(18, 13, "Wrong Password!")
     end
 end
+
 
 function renderLogin()
     switchPage()
@@ -178,7 +183,6 @@ function renderLogin()
         if username == "" or username == nil or passwd == "" or passwd == nil or fullname == "" or fullname == nil then
             shell.run("system/settings/setup.lua")
         end
-
         showCenteredText(7, username .. " @ " .. fullname)
         showTextField(15, 9, 22, userLogin)
         showButton(30, 11, "[Login]", loginBtn)
