@@ -175,6 +175,24 @@ local function showEnableField(x, y, i)
     term.setBackgroundColor(globalBgColor)
 end
 
+local function showDisabledSelectableText(x, y, str)
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.gray)
+    term.setCursorPos(x, y)
+    term.write(str)
+    
+    term.setBackgroundColor(globalBgColor)
+end
+
+local function showEnabledSelectableText(x, y, str)
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.black)
+    term.setCursorPos(x, y)
+    term.write(str)
+    
+    term.setBackgroundColor(globalBgColor)
+end
+
 ---Disable an object
 ---@param x number
 ---@param y number
@@ -194,6 +212,8 @@ function disableObj(x, y)
             showDisabledButton(x, y, strList[objId])
         elseif objType[objId] == "F" then
             showDisabledField(x, y, objId)
+        elseif objType[objId] == "S" or objType[objId] == "G" then
+            showDisabledSelectableText(x, y, strList[objId])
         end
         
         isEnable[objId] = false
@@ -256,6 +276,8 @@ function enableObj(x, y)
             showEnableButton(x, y, strList[objId])
         elseif objType[objId] == "F" then
             showEnableField(x, y, objId)
+        elseif objType[objId] == "S" or objType[objId] == "G" then
+            showEnabledSelectableText(x, y, strList[objId])
         end
         
         isEnable[objId] = true
@@ -285,7 +307,7 @@ function showSingleSelectableText(x, y, str)
     term.setBackgroundColor(globalBgColor)
 end
 
-local function createTextField(x, y, str, ini, w, actFunc, i)
+function createTextField(x, y, str, ini, w, actFunc, i)
     if ini == nil then
         ini = false
     end
@@ -394,6 +416,13 @@ function deleteObj(byStr, x, y)
         objAreaMaxX[objId], objAreaMinX[objId], objAreaY[objId], objActFunc[objId], objType[objId], objMaxWidth[objId], isEnable[objId], isSelected[objId], strList[objId] = 
         nil, nil, nil, nil, nil, nil, nil, nil, nil
         
+    end
+end
+
+--Get an object's position by str
+function getObjPosByStr(str)
+    for i, v in ipairs(strList) do
+        if v == str then return {objAreaMinX[i], objAreaY[i]} end
     end
 end
 
@@ -537,7 +566,6 @@ local function renderMain()
 end
 
 
-
 local function detectClick()
     while true do
         local event, button, x, y = os.pullEvent("mouse_click")
@@ -608,6 +636,7 @@ local function detectClick()
     end
 end
 
+
 local function inputLetter(str, key)
 
     if str == nil then
@@ -667,8 +696,11 @@ end
 detectClickFunc = detectClick
 inputLetterFunc = inputLetter
 detectKeyFunc = detectKey
+local parallelFunctions = {}
 
-
+function addParallelFunctions(func) 
+    parallelFunctions[#parallelFunctions + 1] = func
+end
 
 ---initialize
 function initialize(func, color)
@@ -679,9 +711,13 @@ function initialize(func, color)
     term.setPaletteColor(colors.lightGray, 0xe0e0e0)
     term.setPaletteColor(colors.gray, 0x808080)
     func()
+    for i, v in ipairs(parallelFunctions) do
+        parallel.waitForAny(v)
+    end
     while true do
         if quitFlag == true then break end
         parallel.waitForAny(detectClickFunc, detectKeyFunc)
+
     end
 
     term.setBackgroundColor(colors.black)

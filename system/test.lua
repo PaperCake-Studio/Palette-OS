@@ -1,0 +1,7 @@
+local basalt = require("basalt")
+local main = basalt.createFrame()
+local anInput = main:addInput()
+anInput:setInputType("text")
+anInput:setDefaultText("Username")
+anInput:setInputLimit(20)
+basalt.autoUpdate()

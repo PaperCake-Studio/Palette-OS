@@ -1,235 +1,302 @@
-require("paletteUI_api")
-require("/system/apis/base64")
+local basalt = require("basalt")
 
-local passwdWrote
-local shortFileName = {}
-local fileName = {}
-local bgColor
+--read theme.json
+local theme = io.open("system/settings/theme.json", "r")
+local themeData = theme:read("a")
+local themeTable = textutils.unserializeJSON(themeData)
 
 
-local function showMessage(isAlert, str)
-    if isAlert then
-        showAlert(51 - #tostring(str), 3, tostring(str))
-     else
-        showReminder(51 - #tostring(str), 3, tostring(str))
-    end 
-    sleep(1)
-    showNormalText(1, 3, "                                                    ")
- end
+--define objects
+local main = basalt.createFrame()
+:setBackground(tonumber(themeTable.desktopBgColor))
 
-function reboot()
-    showMessage(false, "Rebooting...")
-    sleep(0.5)
-    os.reboot()
-end
+local menubar = main:addFrame() --upper menu bar frame
+:setSize(52, 4) 
+:setBackground(colors.transparent)
+:setForeground(tonumber(themeTable.menubarFgColor))
 
-function shutdown()
-    showMessage(false, "Shuting Down...")
-    sleep(0.5)
-    os.shutdown()
-end
+local menuPanel = menubar:addPane() --bar
+:setSize(52, 1)
+:setBackground(tonumber(themeTable.menubarBgColor))
 
-function runApp()
+
+
+--create Msgbox function
+function createMsgBox(text, title, optionNum, callback, width, height)
     
-    if getSelectedText() ~= nil then
-        for i, v in ipairs(shortFileName) do
-            if v == getSelectedText() then
-                if i == 1 then
-                    shell.run("fg system/explorer.lua")
-                elseif i == 2 then
-                    shell.run("fg system/settings/settings.lua")
-                elseif i == 3 then
-                    shell.run("fg shell")
-                else
-                    shell.run("fg desktop/" .. fileName[i] .. ".lua")
-                end
-                multishell.setTitle(multishell.getCurrent(), "PaletteOS")
-                break
+
+    local messageBox = main:addMovableFrame()
+    :setSize(width or 30, height or 12)
+    :setPosition(12, 5)
+    :setBorder(tonumber(themeTable.topBarBgColor))
+    :setBackground(tonumber(themeTable.msgBoxBgColor))
+    :hide()
+
+    local msgBoxTopBar = messageBox:addFrame()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setSize("{parent.w}", 1)
+
+    local msgBoxTitle = msgBoxTopBar:addLabel()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setForeground(tonumber(themeTable.topBarFgColor))
+    :setText(title or "Palette MsgBox")
+
+    local msgBoxCloseBtn = msgBoxTopBar:addButton()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setForeground(colors.red)
+    :setPosition("{parent.w - 2}", 1)
+    :setText("X")
+    :setSize(1, 1)
+    :onClick(function ()
+        messageBox:remove()
+    end)
+    
+    local msgBoxText = messageBox:addLabel()
+    :setText("Example")
+    :setFontSize(1)
+    :setPosition(5, 3)
+    
+    local msgBoxConfirmBtn = messageBox:addButton()
+    :setText("Confirm")
+    :setSize(9, 1)
+    :setPosition(11, 11)
+    :setBackground(colors.green)
+    :setForeground(colors.white)
+    
+    local msgBoxCancelBtn = messageBox:addButton()
+    :setText("Cancel")
+    :setSize(9, 1)
+    :setPosition(21, 11)
+    :setBackground(colors.cyan)
+    :setForeground(colors.white)
+
+    local confirm
+    local cancel
+    if optionNum == 0 then
+        confirm = "Confirm"
+        cancel = "Cancel"
+    end
+    if optionNum == 1 then
+        confirm = "Yes"
+        cancel = "No"
+    end
+    
+    msgBoxText:setText(text or "Nothing")
+    :setForeground(tonumber(themeTable.msgBoxFgColor))
+
+    msgBoxConfirmBtn:setText(confirm)
+    :onClick(function()
+        callback(true)
+        messageBox:remove()
+    end)
+    msgBoxCancelBtn:setText(cancel)
+    :onClick(function()
+        callback(false)
+        messageBox:remove()
+    end)
+
+    messageBox:show()
+end
+
+--make a frame resizable
+local function makeResizeable(frame, program, minW, minH, maxW, maxH)
+    minW = minW or 4
+    minH = minH or 4
+    maxW = maxW or 99
+    maxH = maxH or 99
+    local btn = frame:addButton()
+        :setPosition("{parent.w-1}", "{parent.h-1}")
+        :setSize(1, 1)
+        :setText("/")
+        :setForeground(colors.blue)
+        :setBackground(colors.black)
+        :onDrag(function(self, event, btn, xOffset, yOffset)
+            local w, h = frame:getSize()
+            local wOff, hOff = w, h
+            if(w+xOffset-1>=minW)and(w+xOffset-1<=maxW)then
+                wOff = w+xOffset-1
             end
-        end
-        
-    
-        
-    else
-        showMessage(true, "Not Selected!")
-    end
-    
-end
-
-function logoffBtn()
-    passwdWrote = ""
-    showMessage(false, "Logging off...")
-    sleep(0.2)
-    renderLogin()
+            if(h+yOffset-1>=minH)and(h+yOffset-1<=maxH)then
+                hOff = h+yOffset-1
+            end
+            frame:setSize(wOff, hOff)
+        end)
+    program:setPosition(1, 2):setSize("{parent.w}", "{parent.h - 1}")
+    return btn
 end
 
 
-
-function refresh()
-    deleteAllObj()
-    renderMain()
-end
-
-
-function userLogin(readFlag, val)
-    if readFlag then return passwdWrote
-    else passwdWrote = val end
-end
-
-local function switchPage()
-    deleteAllObj()
-
-end
-
-function renderMain()
-    
-    switchPage()
-    clearsc()
-    showNormalText(1, 1, "PaletteOS", colors.blue)
-    showNormalText(10, 1, "|")
-    showButton(12, 1, "[Power]", shutdown)
-    showButton(20, 1, "[Reboot]", reboot)
-    showButton(29, 1, "[Run]", runApp)
-    showButton(35, 1, "[Flush]", refresh)
-    showButton(43, 1, "[Logoff]", logoffBtn)
-    showNormalText(1, 2, "---------+------------------------------------------")
-
-    local list = fs.find("desktop/*.lua")
-    local num = #list
-    local j = 10
-    local k = 2
-    resetSelectedText()
-    shortFileName = {}
-    fileName = {}
-
-    showSingleSelectableText(2, 4, "Explorer")
-    table.insert(shortFileName, "Explorer")
-    table.insert(fileName, "explorer")
-    
-    showSingleSelectableText(2, 6, "Settings")
-    table.insert(shortFileName, "Settings")
-    table.insert(fileName, "settings")
-
-    showSingleSelectableText(2, 8, "DOS Shell")
-    table.insert(shortFileName, "DOS Shell")
-    table.insert(fileName, "multishell")
+local id = 1
+local processes = {}
+local maximumState = {}
+local processX = {}
+local processY = {}
+local processW = {}
+local processH = {}
+local resizeBtn = {}
 
 
-    for i = 1, 21 do
-        
-        if j > 16 then
-            j = 4
-            k = k + 17
-        end
-        if list[i] == nil then
-            break
-        end
-        w = string.sub(string.sub(list[i], 9), 1, string.len(string.sub(list[i], 9)) - 4)
-        showNormalText(k, j, "                ")
+--start a program
+function startProgram(title, programPath, w, h)
+    local pId = id
+    id = id + 1
 
-        if string.len(w) > 14 then
-            showSingleSelectableText(k, j, string.sub(w, 1, 13) .. "..." .. "")
-            table.insert(shortFileName, string.sub(w, 1, 13) .. "...")
-            table.insert(fileName, w)
+    local programWindow = main:addMovableFrame()
+    :setSize(w or 30, h or 12)
+    :setPosition(12, 5)
+    :setBorder(tonumber(themeTable.topBarBgColor))
+
+
+    local mainProgram = programWindow:addProgram():execute(function ()
+        shell.run(programPath)
+    end)
+    :onError(function(self, event, err)
+        print("An error occurred: " .. err)
+    end)
+    :onDone(function ()
+        programWindow:remove()
+    end)
+    :setPosition(1, 2)
+    :setSize(52, 20)
+
+    local programTopBar = programWindow:addFrame()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setSize("{parent.w}", 1)
+
+    local msgBoxTitle = programTopBar:addLabel()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setForeground(tonumber(themeTable.topBarFgColor))
+    :setText(title or "Program")
+
+    local msgBoxCloseBtn = programTopBar:addButton()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setForeground(colors.red)
+    :setPosition("{parent.w - 2}", 1)
+    :setText("X")
+    :setSize(1, 1)
+    :onClick(function ()
+        programWindow:remove()
+    end)
+
+    local btn = makeResizeable(programWindow, mainProgram, 8, 4)
+    resizeBtn[pId] = btn
+
+    local msgBoxMaximumBtn = programTopBar:addButton()
+    :setBackground(tonumber(themeTable.topBarBgColor))
+    :setForeground(colors.yellow)
+    :setPosition("{parent.w - 4}", 1)
+    :setText("+")
+    :setSize(1, 1)
+    msgBoxMaximumBtn:onClick(function ()
+        if maximumState[pId] then
+            maximumState[pId] = false
+            processes[pId]:setSize(processW[pId], processH[pId]):setPosition(processX[pId], processY[pId])
+            msgBoxMaximumBtn:setText("+")
+            resizeBtn[pId]:show()
         else
-            showSingleSelectableText(k, j, w)
-            table.insert(shortFileName, w)
-            table.insert(fileName, w)
-        end 
-            
-        w = nil
-        j = j + 2
-    end
-        
-        
-    
-end
-
-local passwd 
-local salt
-
-function calcPassword(password, s)
-    local temp = password .. s
-    return encodeBase64(temp)
-end
-
-function loginBtn()
-    if passwdWrote == nil or passwdWrote == "" then 
-        showAlert(18, 13, "Empty Password!") 
-        return
-    end
-    if calcPassword(passwdWrote, salt) == passwd then
-        showReminder(22, 13, "Welcome!")
-        sleep(0.5)
-        renderMain()
-    else
-        showAlert(18, 13, "Wrong Password!")
-    end
-end
-
-
-function renderLogin()
-    switchPage()
-    clearsc(bgColor)
-    showCenteredText(2, "User Login")
-    showCenteredText(4, "Palette OS 23.02/01")
-    local nameF = io.open("system/settings/user.data", "r")
-    if nameF ~= nil then
-        local username = nameF:read()
-        local fullname = nameF:read()
-        passwd = nameF:read()
-        salt = nameF:read()
-        nameF:close()
-        if username == "" or username == nil or passwd == "" or passwd == nil or fullname == "" or fullname == nil then
-            shell.run("system/settings/setup.lua")
+            maximumState[pId] = true
+            processX[pId] = processes[pId]:getX()
+            processY[pId] = processes[pId]:getY()
+            processW[pId] = processes[pId]:getWidth()
+            processH[pId] = processes[pId]:getHeight()
+            processes[pId]:setSize(51, 19):setPosition(1, 1)
+            msgBoxMaximumBtn:setText("-")
+            resizeBtn[pId]:hide()
         end
-        showCenteredText(7, username .. " @ " .. fullname)
-        showTextField(15, 9, 22, userLogin)
-        showButton(30, 11, "[Login]", loginBtn)
-    else
-        shell.run("system/settings/setup.lua")
+        
+    end)
+
+    processes[pId] = programWindow
+    maximumState[pId] = false
+    return programWindow
+end
+
+
+--shutdown callback
+local function confirmingShutdown(state)
+    if state then
+        os.shutdown()
     end
 end
 
-
-
-
-local setupdone = io.open("system/settings/.setupdone", "r")
-local nameF = io.open("system/settings/user.data", "r")
-if setupdone == nil or nameF == nil then
-    shell.run("system/settings/setup.lua")
-end
-if setupdone ~= nil then setupdone:close() end
-if nameF ~= nil then nameF:close() end
-
-
-local themeR = io.open("system/settings/theme.data", "r")
-if themeR == nil then
-    local themeNew = io.open("system/settings/theme.data", "w")
-    themeNew:write("lightGray")
-    themeNew:close()
-end
-if themeR ~= nil then themeR:close() end
-
-
-
-local themeF = io.open("system/settings/theme.data", "r")
-local themeStr = themeF:read()
-themeF:close()
-
-
-if themeStr ~= nil then
-    if themeStr == "lightGray" then
-        bgColor = colors.lightGray
-    end
-    if themeStr == "lightBlue" then
-        bgColor = colors.lightBlue
-    end
-    if themeStr == "pink" then
-        bgColor = colors.pink
+--reboot callback
+local function confirmingReboot(state)
+    if state then
+        os.reboot()
     end
 end
-initialize(renderLogin, bgColor)
-while true do
-    multishell.setTitle(multishell.getCurrent(), "PaletteOS")
+
+--thread to reroll back to the 1st option of paletteOptions
+local function paletteOptionsRerollThread(obj)
+    os.sleep(0.1)
+    obj:selectItem(1)
 end
+
+--thread to update time
+local function updateTimeThread(obj)
+    local previousTime
+    while true do
+        local time = textutils.formatTime(os.time("ingame"))
+        if (time ~= previousTime) then
+            obj:setText(time)
+            previousTime = time
+        end
+        os.sleep(1)
+    end
+end
+
+--define paletteOptions
+local paletteOptions = menubar:addDropdown()
+:setForeground(tonumber(themeTable.optionsFgColor))
+:setBackground(tonumber(themeTable.optionsBgColor))
+:addItem("Palette OS", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
+:addItem("Shutdown", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
+:addItem("Reboot", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
+paletteOptions:onChange(
+    function(self, event, item)
+        if item.text == "Shutdown" then
+            createMsgBox("[!] Confirm Shutdown?", "Confirm", 0, confirmingShutdown)
+        end
+        if item.text == "Reboot" then
+            createMsgBox("[!] Confirm Reboot?", "Confirm", 0, confirmingReboot)
+        end
+
+        if item.text ~= "Palette OS" then
+            main:addThread()
+            :start(function ()
+                paletteOptionsRerollThread(paletteOptions)
+            end)
+        end
+    end
+)
+
+local function terminateThread()
+    while true do
+        local event = os.pullEventRaw()
+        if event == "terminate" then
+            basalt.stopUpdate()
+            error()
+        end
+    end
+end
+
+--time label
+local timeLabel = menubar:addLabel()
+:setPosition(44, 1)
+:setFontSize(1)
+:setForeground(colors.white)
+
+--time thread
+local timeThread = main:addThread()
+:start(function ()
+    updateTimeThread(timeLabel)
+end)
+
+--terminate thread
+local terminateThread = main:addThread()
+:start(terminateThread)
+
+
+startProgram("Worm", "rom/programs/fun/worm.lua")
+--autoUpdate
+basalt.autoUpdate()

@@ -1,0 +1,12 @@
+{
+    "desktopBgColor": "0x8",
+    "desktopFgColor": "0x8000",
+    "menubarBgColor": "0x200",
+    "menubarFgColor": "0x1",
+    "optionsBgColor": "0x200",
+    "optionsFgColor": "0x8000",
+    "msgBoxBgColor": "0x80",
+    "msgBoxFgColor": "0x1",
+    "topBarBgColor": "0x8000",
+    "topBarFgColor": "0x1"
+}
