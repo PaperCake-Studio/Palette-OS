@@ -1,0 +1,4 @@
+aes.lua / aesUtils		-- By bighil 			| https://github.com/bighil/aeslua
+zzlib.lua / zzlibUtils	-- By zerkman 		| https://github.com/zerkman/zzlib
+aukit.lua			-- By MCJack123 		| https://github.com/MCJack123/AUKit
+base64.lua			-- References by the Internet
