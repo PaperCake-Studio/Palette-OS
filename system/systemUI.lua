@@ -16,10 +16,9 @@ local mainFrame = main:addFrame()
 :setBackground(colors.transparent)
 
 local menubar = main:addFrame() --upper menu bar frame
-:setSize(52, 5) 
+:setSize(52, 1) 
 :setBackground(colors.transparent)
 :setForeground(tonumber(themeTable.menubarFgColor))
-
 
 local menuPanel = menubar:addPane() --bar
 :setSize(52, 1)
@@ -50,51 +49,7 @@ end
 
 
 
---define programList
-local programList = menubar:addDropdown()
-:setForeground(tonumber(themeTable.optionsFgColor))
-:setBackground(colors.transparent)
-:addItem("Programs", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
-:setPosition(32, 1)
-:setSize(10, 1)
-:selectItem(1)
-:setZIndex(1000)
-programList:onChange(
-    function (self, item)
-        if item.text ~= "Programs" then
-            if utils.getProcessIsHiddenByIndex(utils.getPidByTitle(item.text)) == true then
-                utils.getProcesses()[utils.getPidByTitle(item.text)]:show()
-                :setFocus()
-                utils.setProcessIsHiddenByIndex(utils.getPidByTitle(item.text), false)
-            else
-                utils.getProcesses()[utils.getPidByTitle(item.text)]:setFocus()
-            end 
-
-            main:addThread()
-            :start(function ()
-                rerollDropdown(programList)
-            end)
-        end
-        
-    end
-)
-
-
-
-local processesListenerThread = main.addThread():start(utils.processesListenerThread(programList))
-
-
-
-function getProgramListIndexByTitle(title)
-    for i = 2, programList:getItemCount(), 1 do
-        if programList:getItem(i).text == title then
-            return i
-        end
-    end
-    return false
-end
-
-
+utils.initializeProgramList(main)
 
 
 
@@ -132,15 +87,16 @@ end
 
 
 --define paletteOptions
-local paletteOptions = menubar:addDropdown()
+local paletteOptions = main:addDropdown()
 :setForeground(tonumber(themeTable.optionsFgColor))
 :setBackground(tonumber(themeTable.optionsBgColor))
 :addItem("Palette OS", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
 :addItem("Shutdown", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
 :addItem("Reboot", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
 :addItem("Terminal", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
+:addItem("About", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
 :selectItem(1)
-:setZIndex(1000)
+:setZIndex(900)
 
 paletteOptions:onChange(
     function(self, item)
@@ -152,6 +108,9 @@ paletteOptions:onChange(
         end
         if item.text == "Terminal" then
             utils.startProgram(mainFrame, "Terminal", "shell")
+        end
+        if item.text == "About" then
+            utils.createMsgBox(mainFrame, {"Palette OS -", "Basalt Alpha", "Dev Version 1.1.0", "", "Made by BlueStarrySky233"}, "Info", 2, nil)
         end
 
         if item.text ~= "Palette OS" then
