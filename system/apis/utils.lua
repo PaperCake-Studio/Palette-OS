@@ -1,23 +1,50 @@
 local themeTable = {}
-function readThemeTable()
+
+utils = {}
+
+local defaultThemeTable = {
+    ["desktopBgColor"] = "0x8",
+    ["desktopFgColor"] = "0x8000",
+    ["menubarBgColor"] = "0x200",
+    ["menubarFgColor"] = "0x1",
+    ["optionsBgColor"] = "0x200",
+    ["optionsFgColor"] = "0x8000",
+    ["msgBoxBgColor"] = "0x80",
+    ["msgBoxFgColor"] = "0x1",
+    ["topBarBgColor"] = "0x8000",
+    ["topBarFgColor"] = "0x1"
+}
+
+function utils.readThemeTable()
     --read theme.json
-    local theme = io.open("system/settings/theme.json", "r")
-    if theme == nil then error("theme.json doesn't exist!") end
+    theme = io.open("system/settings/theme.json", "r")
+    if theme == nil then 
+        theme = io.open("system/settings/theme.json", "w")
+        theme:write(textutils.serializeJSON(defaultThemeTable))
+        theme:close()
+        theme = io.open("system/settings/theme.json", "r")
+    end
     local themeData = theme:read("a")
     local themeTable = textutils.unserializeJSON(themeData)
+    theme:close()
     return themeTable
 end
 
 --create Msgbox function
-function createMsgBox(mainFrame, text, title, optionNum, callback, width, height)
-    themeTable = readThemeTable()
+function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, height)
+
+    themeTable = utils.readThemeTable()
+
+    local enableCallback = callback ~= nil
 
     local messageBox = mainFrame:addFrame()
     :setMovable(true)
     :setSize(width or 30, height or 12)
     :setPosition(12, 5)
     :setBorder(tonumber(themeTable.topBarBgColor))
+    :setForeground(tonumber(themeTable.msgBoxFgColor))
     :setBackground(tonumber(themeTable.msgBoxBgColor))
+    :setZIndex(999)
     :hide()
 
     local msgBoxTopBar = messageBox:addFrame()
@@ -39,11 +66,23 @@ function createMsgBox(mainFrame, text, title, optionNum, callback, width, height
         messageBox:remove()
     end)
     
-    local msgBoxText = messageBox:addLabel()
-    :setText("Example")
-    :setFontSize(1)
-    :setPosition(5, 3)
-    
+
+    if type(text) == "table" then
+        for index, value in ipairs(text) do
+            messageBox:addLabel()
+            :setFontSize(1)
+            :setPosition(5, 2 + index)
+            :setText(value or "Nothing")
+            :setForeground(tonumber(themeTable.msgBoxFgColor))
+        end
+        
+    else
+        messageBox:addLabel()
+        :setFontSize(1)
+        :setPosition(5, 3)
+        :setText(text or "Nothing")
+        :setForeground(tonumber(themeTable.msgBoxFgColor))
+    end
     
 
     local confirm
@@ -73,7 +112,9 @@ function createMsgBox(mainFrame, text, title, optionNum, callback, width, height
 
         msgBoxConfirmBtn:setText(confirm)
         :onClick(function()
-            callback(true)
+            if enableCallback then
+                callback(true)
+            end
             messageBox:remove()
         end)
     end
@@ -88,14 +129,16 @@ function createMsgBox(mainFrame, text, title, optionNum, callback, width, height
 
         msgBoxCancelBtn:setText(cancel)
         :onClick(function()
-            callback(false)
+            if enableCallback then
+                callback(false)
+            end
+            
             messageBox:remove()
         end)        
     end
     
     
-    msgBoxText:setText(text or "Nothing")
-    :setForeground(tonumber(themeTable.msgBoxFgColor))
+    
 
     
 
@@ -103,7 +146,7 @@ function createMsgBox(mainFrame, text, title, optionNum, callback, width, height
 end
 
 --make a frame resizable
-function makeResizeable(frame, program, minW, minH, maxW, maxH)
+function utils.makeResizeable(frame, program, minW, minH, maxW, maxH)
     minW = minW or 4
     minH = minH or 4
     maxW = maxW or 99
@@ -129,6 +172,51 @@ function makeResizeable(frame, program, minW, minH, maxW, maxH)
     return btn
 end
 
+function utils.rerollDropdown(obj)
+    os.sleep(0.1)
+    obj:selectItem(1)
+end
+
+
+function utils.initializeProgramList( main)
+    programList = main:addDropdown()
+    :setForeground(tonumber(themeTable.optionsFgColor))
+    :setBackground(colors.transparent)
+    :addItem("Programs", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
+    :setPosition(32, 1)
+    :setSize(10, 1)
+    :selectItem(1)
+    :setZIndex(900)
+    programList:onChange(
+        function (self, item)
+            if item.text ~= "Programs" then
+                if utils.getProcessIsHiddenByIndex(utils.getPidByTitle(item.text)) == true then
+                    utils.getProcesses()[utils.getPidByTitle(item.text)]:show()
+                    :setFocus()
+                    utils.setProcessIsHiddenByIndex(utils.getPidByTitle(item.text), false)
+                else
+                    utils.getProcesses()[utils.getPidByTitle(item.text)]:setFocus()
+                end 
+    
+                main:addThread()
+                :start(function ()
+                    utils.rerollDropdown(programList)
+                end)
+            end
+            
+        end
+    )
+end
+
+function utils.getProgramListIndexByTitle(title)
+    for i = 2, programList:getItemCount(), 1 do
+        if programList:getItem(i).text == title then
+            return i
+        end
+    end
+    return false
+end
+
 local id = 1
 local processes = {}
 local maximumState = {}
@@ -145,8 +233,8 @@ local programTitle = {}
 
 
 --start a program
-function startProgram(mainFrame, title, programPath, w, h)
-    themeTable = readThemeTable()
+function utils.startProgram(mainFrame, title, programPath, w, h)
+    themeTable = utils.readThemeTable()
 
     local pId = id
     id = id + 1
@@ -157,7 +245,7 @@ function startProgram(mainFrame, title, programPath, w, h)
 
     programTitle[pId] = trueTitle
 
-    
+    programList:addItem(trueTitle, tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
     
 
     local programWindow = mainFrame:addFrame()
@@ -165,18 +253,19 @@ function startProgram(mainFrame, title, programPath, w, h)
     :setSize(w or 30, h or 12)
     :setPosition(12, 5)
     :setBorder(tonumber(themeTable.topBarBgColor))
-    :setZIndex(100)
+    
 
     
 
     
     local mainProgram = programWindow:addProgram():execute(programPath)
     :onError(function (self, event, err)
-        createMsgBox("An error occured: " + err, "Error!", 2, function () end)
+        utils.createMsgBox("An error occured: " + err, "Error!", 2, function () end)
     end)
     :onDone(function (self)
         programWindow:remove()
-        processes[getPidByTitle(trueTitle)] = nil
+        processes[utils.getPidByTitle(trueTitle)] = nil
+        programList:removeItem(utils.getProgramListIndexByTitle(trueTitle))
     end)
     :setPosition(1, 2)
     :setSize(52, 20)
@@ -200,7 +289,8 @@ function startProgram(mainFrame, title, programPath, w, h)
     :setSize(1, 1)
     :onClick(function ()
         programWindow:remove()
-        processes[getPidByTitle(trueTitle)] = nil
+        processes[utils.getPidByTitle(trueTitle)] = nil
+        programList:removeItem(utils.getProgramListIndexByTitle(trueTitle))
     end)
 
     local msgBoxMinimumBtn = programTopBar:addButton()
@@ -211,10 +301,10 @@ function startProgram(mainFrame, title, programPath, w, h)
     :setSize(1, 1)
     :onClick(function ()
         programWindow:hide()
-        isHidden[getPidByTitle(trueTitle)] = true
+        isHidden[utils.getPidByTitle(trueTitle)] = true
     end)
 
-    local btn = makeResizeable(programWindow, mainProgram, 8, 4)
+    local btn = utils.makeResizeable(programWindow, mainProgram, 8, 4)
     resizeBtn[pId] = btn
 
     local msgBoxMaximumBtn = programTopBar:addButton()
@@ -242,44 +332,52 @@ function startProgram(mainFrame, title, programPath, w, h)
 
     processes[pId] = programWindow
     maximumState[pId] = false
+
+    programWindow:setZIndex(999)
     return programWindow
 end
 
-function processesListenerThread(programListObj)
-    local processes = {}
-    while true do
-        local prevProcesses = processes
-        processes = getProcesses()
-        if #prevProcesses ~= #processes then
-            programListObj:clear()
-            programListObj:addItem("Programs", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
-            for index, value in ipairs(getAllTitles()) do
-                programListObj:addItem(value, tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
-            end
-            
-        end
-    end
-end
 
-function getProcesses()
+
+function utils.getProcesses()
     return processes
 end
 
-function getProcessIsHiddenByIndex(index)
+function utils.getProcessIsHiddenByIndex(index)
     return isHidden[index]
 end
 
-function setProcessIsHiddenByIndex(index, val)
+function utils.setProcessIsHiddenByIndex(index, val)
     isHidden[index] = val
 end
 
-function getPidByTitle(title)
+function utils.getPidByTitle(title)
     for index, value in ipairs(programTitle) do
         if (value == title) then return index end
     end
     return false
 end
 
-function getAllTitles() 
+function utils.getAllTitles() 
     return programTitle
 end
+
+local defaultSettingsTable = {
+    ["openWithoutStartScreens"] = 0
+}
+
+function utils.readSettings()
+    settings = io.open("system/settings/settings.json", "r")
+    if settings == nil then 
+        settings = io.open("system/settings/settings.json", "w")
+        settings:write(textutils.serializeJSON(defaultSettingsTable))
+        settings:close()
+        settings = io.open("system/settings/settings.json", "r")
+    end
+    local settingsData = settings:read("a")
+    local settingsTable = textutils.unserializeJSON(settingsData)
+    settings:close()
+    return settingsTable
+end
+
+return utils
