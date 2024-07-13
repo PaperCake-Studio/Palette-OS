@@ -1,3 +1,4 @@
+
 local themeTable = {}
 
 utils = {}
@@ -12,7 +13,11 @@ local defaultThemeTable = {
     ["msgBoxBgColor"] = "0x80",
     ["msgBoxFgColor"] = "0x1",
     ["topBarBgColor"] = "0x8000",
-    ["topBarFgColor"] = "0x1"
+    ["topBarFgColor"] = "0x1",
+    ["desktopIconBgColor"] = "0x200",
+    ["desktopIconFgColor"] = "0x1",
+    ["desktopIconBgColorSelected"] = "0x800",
+    ["desktopIconFgColorSelected"] = "0x1"
 }
 
 function utils.readThemeTable()
@@ -45,18 +50,20 @@ function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, 
     :setForeground(tonumber(themeTable.msgBoxFgColor))
     :setBackground(tonumber(themeTable.msgBoxBgColor))
     :setZIndex(999)
+    :setBar(title or "Info", tonumber(themeTable.topBarBgColor), tonumber(themeTable.topBarFgColor))
+    :showBar()
     :hide()
 
-    local msgBoxTopBar = messageBox:addFrame()
+    --[[local msgBoxTopBar = messageBox:addFrame()
     :setBackground(tonumber(themeTable.topBarBgColor))
     :setSize("parent.w", 1)
 
     local msgBoxTitle = msgBoxTopBar:addLabel()
     :setBackground(tonumber(themeTable.topBarBgColor))
     :setForeground(tonumber(themeTable.topBarFgColor))
-    :setText(title or "Palette MsgBox")
+    :setText(title or "Palette MsgBox")]]--
 
-    local msgBoxCloseBtn = msgBoxTopBar:addButton()
+    local msgBoxCloseBtn = messageBox:addButton()
     :setBackground(tonumber(themeTable.topBarBgColor))
     :setForeground(colors.red)
     :setPosition("parent.w", 1)
@@ -142,21 +149,21 @@ function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, 
 
     
 
-    messageBox:show()
+    messageBox:show():setFocus()
 end
 
 --make a frame resizable
 function utils.makeResizeable(frame, program, minW, minH, maxW, maxH)
-    minW = minW or 4
-    minH = minH or 4
-    maxW = maxW or 99
-    maxH = maxH or 99
+    minW = minW or 30
+    minH = minH or 12
+    maxW = maxW or 52
+    maxH = maxH or 18
     local btn = frame:addButton()
         :setPosition("parent.w", "parent.h")
         :setSize(1, 1)
         :setText("/")
         :setForeground(colors.blue)
-        :setBackground(colors.black)
+        :setBackground(colors.transparent)
         :onDrag(function(self, event, btn, xOffset, yOffset)
             local w, h = frame:getSize()
             local wOff, hOff = w, h
@@ -181,7 +188,7 @@ end
 function utils.initializeProgramList( main)
     programList = main:addDropdown()
     :setForeground(tonumber(themeTable.optionsFgColor))
-    :setBackground(colors.transparent)
+    :setBackground(tonumber(themeTable.optionsBgColor))
     :addItem("Programs", tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
     :setPosition(32, 1)
     :setSize(10, 1)
@@ -218,7 +225,6 @@ function utils.getProgramListIndexByTitle(title)
 end
 
 local id = 1
-local processes = {}
 local maximumState = {}
 local processX = {}
 local processY = {}
@@ -226,10 +232,11 @@ local processW = {}
 local processH = {}
 local resizeBtn = {}
 
+
 local pids = {}
 local isHidden = {}
-local programTitle = {}
-
+local programTitles = {}
+local processes = {}
 
 
 --start a program
@@ -238,13 +245,11 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
 
     local pId = id
     id = id + 1
-    pids[#pids+1] = pId
-    isHidden[pId] = false
+    table.insert(pids, #pids + 1, pId)
+    table.insert(isHidden, pId, false)
     local trueTitle = title .. "$" .. tostring(pId)
 
-
-    programTitle[pId] = trueTitle
-
+    table.insert(programTitles, pId, trueTitle)
     programList:addItem(trueTitle, tonumber(themeTable.optionsBgColor), tonumber(themeTable.optionsFgColor))
     
 
@@ -253,7 +258,8 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
     :setSize(w or 30, h or 12)
     :setPosition(12, 5)
     :setBorder(tonumber(themeTable.topBarBgColor))
-    
+    :setBar(title or "Program", tonumber(themeTable.topBarBgColor), tonumber(themeTable.topBarFgColor))
+    :showBar()
 
     
 
@@ -264,12 +270,16 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
     end)
     :onDone(function (self)
         programWindow:remove()
-        processes[utils.getPidByTitle(trueTitle)] = nil
+        processes[pId] = ""
         programList:removeItem(utils.getProgramListIndexByTitle(trueTitle))
+        programTitles[pId] = ""
+        isHidden[pId] = ""
+        pids[pId] = ""
     end)
     :setPosition(1, 2)
     :setSize(52, 20)
 
+    --[[
     local programTopBar = programWindow:addFrame()
     :setBackground(tonumber(themeTable.topBarBgColor))
     :setSize("parent.w", 1)
@@ -279,23 +289,27 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
     :setBackground(tonumber(themeTable.topBarBgColor))
     :setForeground(tonumber(themeTable.topBarFgColor))
     :setText(title or "Program")
+    ]]
 
 
-    local msgBoxCloseBtn = programTopBar:addButton()
-    :setBackground(tonumber(themeTable.topBarBgColor))
-    :setForeground(colors.red)
+    local msgBoxCloseBtn = programWindow:addButton()
+    :setBackground(colors.red)
+    :setForeground(tonumber(themeTable.topBarBgColor))
     :setPosition("parent.w", 1)
     :setText("X")
     :setSize(1, 1)
     :onClick(function ()
         programWindow:remove()
-        processes[utils.getPidByTitle(trueTitle)] = nil
+        processes[pId] = ""
         programList:removeItem(utils.getProgramListIndexByTitle(trueTitle))
+        programTitles[pId] = ""
+        isHidden[pId] = ""
+        pids[pId] = ""
     end)
 
-    local msgBoxMinimumBtn = programTopBar:addButton()
-    :setBackground(tonumber(themeTable.topBarBgColor))
-    :setForeground(colors.yellow)
+    local msgBoxMinimumBtn = programWindow:addButton()
+    :setBackground(colors.yellow)
+    :setForeground(tonumber(themeTable.topBarBgColor))
     :setPosition("parent.w - 4", 1)
     :setText("-")
     :setSize(1, 1)
@@ -304,12 +318,12 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
         isHidden[utils.getPidByTitle(trueTitle)] = true
     end)
 
-    local btn = utils.makeResizeable(programWindow, mainProgram, 8, 4)
+    local btn = utils.makeResizeable(programWindow, mainProgram, w, h)
     resizeBtn[pId] = btn
 
-    local msgBoxMaximumBtn = programTopBar:addButton()
-    :setBackground(tonumber(themeTable.topBarBgColor))
-    :setForeground(colors.green)
+    local msgBoxMaximumBtn = programWindow:addButton()
+    :setBackground(colors.green)
+    :setForeground(tonumber(themeTable.topBarBgColor))
     :setPosition("parent.w - 2", 1)
     :setText("+")
     :setSize(1, 1)
@@ -324,16 +338,16 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
             processY[pId] = processes[pId]:getY()
             processW[pId] = processes[pId]:getWidth()
             processH[pId] = processes[pId]:getHeight()
-            processes[pId]:setSize(51, 19):setPosition(1, 1)
+            processes[pId]:setSize(51, 18):setPosition(1, 1)
             resizeBtn[pId]:hide()
         end
         
     end)
 
-    processes[pId] = programWindow
-    maximumState[pId] = false
+    table.insert(processes, pId, programWindow)
+    table.insert(maximumState, pId, false)
 
-    programWindow:setZIndex(999)
+    programWindow:setZIndex(999):setFocus()
     return programWindow
 end
 
@@ -341,6 +355,10 @@ end
 
 function utils.getProcesses()
     return processes
+end
+
+function utils.getAllPids()
+    return pids
 end
 
 function utils.getProcessIsHiddenByIndex(index)
@@ -352,18 +370,23 @@ function utils.setProcessIsHiddenByIndex(index, val)
 end
 
 function utils.getPidByTitle(title)
-    for index, value in ipairs(programTitle) do
+    for index, value in ipairs(programTitles) do
         if (value == title) then return index end
     end
     return false
 end
 
 function utils.getAllTitles() 
-    return programTitle
+    return programTitles
+end
+
+function utils.getTitleByPid(pid)
+    return programTitles[pid]
 end
 
 local defaultSettingsTable = {
-    ["openWithoutStartScreens"] = 0
+    ["openWithoutStartScreens"] = 0,
+    ["noErrLogsWhenBSoD"] = 0
 }
 
 function utils.readSettings()
@@ -378,6 +401,15 @@ function utils.readSettings()
     local settingsTable = textutils.unserializeJSON(settingsData)
     settings:close()
     return settingsTable
+end
+
+function utils.closeProgram(pid)
+    processes[pid]:remove()
+    processes[pid] = ""
+    programList:removeItem(utils.getProgramListIndexByTitle(utils.getTitleByPid(pid)))
+    programTitles[pid] = ""
+    isHidden[pid] = ""
+    pids[pid] = ""
 end
 
 return utils
