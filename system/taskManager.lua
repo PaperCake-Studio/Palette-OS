@@ -8,6 +8,7 @@ local processLists = main:addList():setScrollable(true):setBackground(colors.gra
 
 
 local function refreshList()
+    local i = processLists:getItemIndex()
     processLists:clear()
     for index, value in ipairs(processes) do
         if utils.getTitleByPid(value) ~= nil then
@@ -15,6 +16,7 @@ local function refreshList()
         end
         
     end
+    processLists:selectItem(i)
 end
 
 local endProcessBtn = main:addButton():setText("End"):setSize(5, 1):setPosition(1, "parent.h"):setBackground(colors.cyan):setForeground(colors.white)
@@ -30,7 +32,13 @@ endProcessBtn:onRelease(function ()
 end)
 
 local refreshBtn = main:addButton():setText("Refresh"):setSize(9, 1):setPosition(7, "parent.h"):setBackground(colors.cyan):setForeground(colors.white)
-:onClick(refreshList)
+refreshBtn:onClick(function ()
+    refreshBtn:setBackground(colors.blue)
+end)
+refreshBtn:onRelease(function ()
+    refreshList()
+    refreshBtn:setBackground(colors.cyan)
+end)
 
 main:addThread():start(function ()
     while true do

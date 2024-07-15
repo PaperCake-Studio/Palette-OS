@@ -36,7 +36,7 @@ function utils.readThemeTable()
 end
 
 --create Msgbox function
-function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, height)
+function utils.createMsgBox(text, title, optionNum, callback, width, height)
 
     themeTable = utils.readThemeTable()
 
@@ -113,7 +113,7 @@ function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, 
         local msgBoxConfirmBtn = messageBox:addButton()
         :setText("Confirm")
         :setSize(9, 1)
-        :setPosition(11, 11)
+        :setPosition("parent.w - 19", "parent.h - 1")
         :setBackground(colors.green)
         :setForeground(colors.white)
 
@@ -130,7 +130,7 @@ function utils.createMsgBox(mainFrame, text, title, optionNum, callback, width, 
         local msgBoxCancelBtn = messageBox:addButton()
         :setText("Cancel")
         :setSize(9, 1)
-        :setPosition(21, 11)
+        :setPosition("parent.w - 9", "parent.h - 1")
         :setBackground(colors.cyan)
         :setForeground(colors.white)
 
@@ -224,6 +224,12 @@ function utils.getProgramListIndexByTitle(title)
     return false
 end
 
+local mainFrame
+
+function utils.initializeMainFrame(mainFrameObj)
+    mainFrame = mainFrameObj
+end
+
 local id = 1
 local maximumState = {}
 local processX = {}
@@ -240,7 +246,7 @@ local processes = {}
 
 
 --start a program
-function utils.startProgram(mainFrame, title, programPath, w, h)
+function utils.startProgram(title, programPath, w, h)
     themeTable = utils.readThemeTable()
 
     local pId = id
@@ -265,8 +271,15 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
 
     
     local mainProgram = programWindow:addProgram():execute(programPath)
-    :onError(function (self, event, err)
-        utils.createMsgBox("An error occured: " + err, "Error!", 2, function () end)
+    :onError(function (self, err)
+        utils.createMsgBox("An error occured: " + err, "Error!", 2, function (flag) 
+            programWindow:remove()
+            processes[pId] = ""
+            programList:removeItem(utils.getProgramListIndexByTitle(trueTitle))
+            programTitles[pId] = ""
+            isHidden[pId] = ""
+            pids[pId] = ""
+        end)
     end)
     :onDone(function (self)
         programWindow:remove()
@@ -331,7 +344,9 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
         if maximumState[pId] then
             maximumState[pId] = false
             processes[pId]:setSize(processW[pId], processH[pId]):setPosition(processX[pId], processY[pId])
+            :setMovable(true)
             resizeBtn[pId]:show()
+            msgBoxMaximumBtn:setText("+")
         else
             maximumState[pId] = true
             processX[pId] = processes[pId]:getX()
@@ -339,7 +354,9 @@ function utils.startProgram(mainFrame, title, programPath, w, h)
             processW[pId] = processes[pId]:getWidth()
             processH[pId] = processes[pId]:getHeight()
             processes[pId]:setSize(51, 18):setPosition(1, 1)
+            :setMovable(false)
             resizeBtn[pId]:hide()
+            msgBoxMaximumBtn:setText("#")
         end
         
     end)
@@ -411,5 +428,17 @@ function utils.closeProgram(pid)
     isHidden[pid] = ""
     pids[pid] = ""
 end
+
+function utils.split(inputstr, sep)
+    if sep == nil then
+      sep = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+      table.insert(t, str)
+    end
+    return t
+end
+  
 
 return utils

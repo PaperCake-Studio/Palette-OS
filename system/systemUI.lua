@@ -10,6 +10,7 @@ local errMsgAndPossibleReasonTable = {
 local themeTable = utils.readThemeTable()
 local settingsTable = utils.readSettings()
 
+
 --#region write errlog
 local function writeErrlog(errorMsg)
     local possibleReason = errMsgAndPossibleReasonTable[errorMsg]
@@ -29,16 +30,18 @@ local main = basalt.createFrame()
 :setBackground(tonumber(themeTable.desktopBgColor))
 
 
-local mainFrame = main:addFrame()
+mainFrame = main:addFrame()
 :setZIndex(100)
 :setPosition(1, 2)
-:setSize(52, 19)
+:setSize(52, 18)
 :setBackground(colors.transparent)
+
+utils.initializeMainFrame(mainFrame)
 
 local contextMenu = mainFrame:addFrame()
 :setSize(10, 5)
 :setBackground(colors.gray)
-:setForeground(colors.write)
+:setForeground(colors.white)
 :setZIndex(1)
 :hide()
 contextMenu:onLoseFocus(function ()
@@ -241,7 +244,7 @@ end)
 
 --#region about msg box
 local function popAboutMsgBox()
-    utils.createMsgBox(mainFrame, {"Palette OS -", "Basalt Alpha", "Dev Version 1.1.1", "", "Made by BlueStarrySky233"}, "Info", 2, nil)
+    utils.createMsgBox({"Palette OS -", "Basalt Alpha", "Dev Version 1.1.2", "", "Made by BlueStarrySky233"}, "Info", 2, nil)
 end
 --#endregion
 
@@ -261,13 +264,13 @@ local paletteOptions = main:addDropdown()
 paletteOptions:onChange(
     function(self, item)
         if item.text == "Shutdown" then
-            utils.createMsgBox(mainFrame, "[!] Confirm Shutdown?", "Confirm", 0, confirmingShutdown)
+            utils.createMsgBox("[!] Confirm Shutdown?", "Confirm", 0, confirmingShutdown)
         end
         if item.text == "Reboot" then
-            utils.createMsgBox(mainFrame, "[!] Confirm Reboot?", "Confirm", 0, confirmingReboot)
+            utils.createMsgBox("[!] Confirm Reboot?", "Confirm", 0, confirmingReboot)
         end
         if item.text == "Terminal" then
-            utils.startProgram(mainFrame, "Terminal", "shell")
+            utils.startProgram("Terminal", "shell")
         end
         if item.text == "About" then
             popAboutMsgBox()
@@ -353,7 +356,7 @@ local function createDesktopSpirte(desktopName, execCommand)
                     obj:setBackground(tonumber(themeTable.desktopIconBgColorSelected)):setForeground(tonumber(themeTable.desktopIconFgColorSelected))
                 elseif currentSelectedSprite == index then
                     --when clicking on it twice, opens the app
-                    utils.startProgram(mainFrame, value.realName, value.execCommand)
+                    utils.startProgram(value.realName, value.execCommand)
                 end
                 
                 break
@@ -385,9 +388,8 @@ end
 --#region desktop icons
 local function refreshDesktop()
     desktopAppsList = {}
-    createDesktopSpirte("Terminal", "shell")
-    createDesktopSpirte("Worm Game", "worm")
     createDesktopSpirte("Task Manager", "/system/taskManager.lua")
+    createDesktopSpirte("Explorer", "/system/explorer.lua")
     if fs.exists("desktop") then
         local apps = fs.find("desktop/*.applink")
         for index, value in ipairs(apps) do
@@ -425,19 +427,35 @@ contextRefreshBtn:onRelease(function (self, event, btn, x, y)
 end)
 
 
-local contextTerminalBtn = contextMenu:addButton():setPosition(1, 2):setSize("parent.w", 1):setText("About"):setForeground(colors.white):setBackground(colors.gray)
+local contextAboutBtn = contextMenu:addButton():setPosition(1, "parent.h"):setSize("parent.w", 1):setText("About"):setForeground(colors.white):setBackground(colors.gray)
 :setHorizontalAlign("left")
-contextTerminalBtn:onClick(function (self, event, btn, x, y)
+contextAboutBtn:onClick(function (self, event, btn, x, y)
     if btn == 1 then
-        contextTerminalBtn:setBackground(colors.black)
+        contextAboutBtn:setBackground(colors.black)
     end
     
 end)
-contextTerminalBtn:onRelease(function (self, event, btn, x, y)
+contextAboutBtn:onRelease(function (self, event, btn, x, y)
     if btn ~= 1 then return end
-    contextTerminalBtn:setBackground(colors.gray)
+    contextAboutBtn:setBackground(colors.gray)
     contextMenu:hide()
     popAboutMsgBox()
+    
+end)
+
+local contextTaskMgrBtn = contextMenu:addButton():setPosition(1, 2):setSize("parent.w", 1):setText("Task Mgr"):setForeground(colors.white):setBackground(colors.gray)
+:setHorizontalAlign("left")
+contextTaskMgrBtn:onClick(function (self, event, btn, x, y)
+    if btn == 1 then
+        contextTaskMgrBtn:setBackground(colors.black)
+    end
+    
+end)
+contextTaskMgrBtn:onRelease(function (self, event, btn, x, y)
+    if btn ~= 1 then return end
+    contextTaskMgrBtn:setBackground(colors.gray)
+    contextMenu:hide()
+    utils.startProgram("Task Manager", "/system/taskManager.lua")
     
 end)
 --#endregion
